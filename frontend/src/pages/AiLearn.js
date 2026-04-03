@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, Input, Button, Card, List, Spin, Typography, message, Tag, Empty } from 'antd';
-import { InboxOutlined, SendOutlined, FileTextOutlined, BookOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
+import { InboxOutlined, SendOutlined, FileTextOutlined, BookOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './AiLearn.css';
@@ -14,7 +14,6 @@ const AiLearn = () => {
     const [documents, setDocuments] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [question, setQuestion] = useState('');
-    const [answer, setAnswer] = useState(null);
     const [asking, setAsking] = useState(false);
     const [chatHistory, setChatHistory] = useState([]);
     const navigate = useNavigate();

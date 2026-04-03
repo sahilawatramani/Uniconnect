@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Input, Button, Card, Radio, Select, InputNumber, Typography, Tag, Spin, Progress, Result, message } from 'antd';
-import { TrophyOutlined, BookOutlined, ArrowLeftOutlined, CheckCircleOutlined, CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Input, Button, Card, Radio, Select, InputNumber, Typography, Tag, Spin, Progress, message } from 'antd';
+import { TrophyOutlined, ArrowLeftOutlined, CheckCircleOutlined, CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './AiQuiz.css';
