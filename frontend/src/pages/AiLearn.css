@@ -1,0 +1,244 @@
+/* AiLearn.css — Learning Hub with Upload & Q&A */
+
+.ai-learn-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f7f9fa 20%, #e1f4f1 80%);
+    font-family: 'Segoe UI', 'Inter', sans-serif;
+}
+
+/* Header */
+.ai-learn-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #004643, #006b5f);
+    gap: 1rem;
+    box-shadow: 0 4px 16px rgba(0, 70, 67, 0.3);
+}
+
+.ai-learn-header .back-btn {
+    color: #fff !important;
+}
+
+.ai-learn-header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ai-learn-header-title h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 1.3rem;
+}
+
+.ai-learn-header-title .header-icon {
+    font-size: 1.8rem;
+    color: #4ecdc4;
+}
+
+.ai-learn-header-title .header-subtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+}
+
+/* Body — Split Layout */
+.ai-learn-body {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    min-height: calc(100vh - 70px);
+}
+
+/* Sidebar */
+.ai-learn-sidebar {
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.upload-card, .docs-card {
+    border-radius: 16px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+.upload-card .ant-card-head-title,
+.docs-card .ant-card-head-title {
+    font-weight: 600;
+    color: #004643;
+}
+
+.upload-dragger {
+    border-radius: 12px !important;
+    border: 2px dashed rgba(0, 127, 95, 0.3) !important;
+    background: rgba(78, 205, 196, 0.05) !important;
+    transition: all 0.3s ease;
+}
+
+.upload-dragger:hover {
+    border-color: #4ecdc4 !important;
+    background: rgba(78, 205, 196, 0.1) !important;
+}
+
+/* Chat Panel */
+.ai-learn-chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.qa-card {
+    flex: 1;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.qa-card .ant-card-head-title {
+    font-weight: 600;
+    color: #004643;
+}
+
+.qa-card .ant-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px !important;
+}
+
+.qa-messages {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 400px;
+    max-height: calc(100vh - 280px);
+    padding: 8px;
+}
+
+.qa-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 300px;
+    text-align: center;
+    gap: 8px;
+}
+
+.qa-empty h3 {
+    color: #004643;
+    margin: 0;
+}
+
+.qa-empty p {
+    color: #888;
+    margin: 0;
+}
+
+.qa-suggestions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    justify-content: center;
+}
+
+.qa-suggestions .ant-btn {
+    border-radius: 20px;
+    border-color: rgba(0, 127, 95, 0.3);
+    color: #007f5f;
+}
+
+.qa-suggestions .ant-btn:hover {
+    border-color: #007f5f;
+    color: #004643;
+}
+
+/* Message Bubbles */
+.qa-message {
+    margin-bottom: 12px;
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.qa-message.user {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.qa-bubble {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    line-height: 1.6;
+    font-size: 0.9rem;
+}
+
+.qa-bubble.user {
+    background: linear-gradient(135deg, #004643, #006b5f);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+.qa-bubble.assistant {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.qa-bubble.assistant li {
+    margin-left: 16px;
+    margin-bottom: 4px;
+}
+
+.qa-sources {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* Input */
+.qa-input {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    align-items: flex-end;
+}
+
+.qa-input-field {
+    flex: 1;
+    border-radius: 12px !important;
+    border: 1px solid #d4e2e1 !important;
+    resize: none !important;
+}
+
+.qa-input-field:focus {
+    border-color: #4ecdc4 !important;
+    box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.2) !important;
+}
+
+.qa-send-btn {
+    background: linear-gradient(135deg, #004643, #007f5f) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    height: 40px !important;
+    padding: 0 20px !important;
+    font-weight: 600;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+    .ai-learn-body {
+        flex-direction: column;
+    }
+    .ai-learn-sidebar {
+        width: 100%;
+    }
+}

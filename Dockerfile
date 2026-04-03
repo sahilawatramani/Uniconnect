@@ -1,6 +1,0 @@
-FROM mysql:8.0
-
-ENV MYSQL_ROOT_PASSWORD=welcome123
-ENV MYSQL_DATABASE=dcdslproject
-
-EXPOSE 3306

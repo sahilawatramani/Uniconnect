@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 // 🚨 ALLOW ALL ORIGINS (TEMPORARY FOR TESTING)
 app.use(cors({
@@ -21,6 +21,7 @@ const enrollmentRoutes = require('./api/routes/enrollmentRoutes');
 const classroomRoutes = require('./api/routes/classroomRoutes');
 const alumniRoutes = require('./api/routes/alumniRoutes');
 const attendanceRoutes = require('./api/routes/attendanceRoutes');
+const aiRoutes = require('./api/routes/aiRoutes');
 
 app.use('/api/students', studentRoutes);
 app.use('/api/courses', courseRoutes);
@@ -29,6 +30,7 @@ app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/classrooms', classroomRoutes);
 app.use('/api/alumni', alumniRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

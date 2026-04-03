@@ -1,0 +1,190 @@
+/* AiInsights.css — Smart Insights Dashboard */
+
+.ai-insights-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f7f9fa 20%, #e1f4f1 80%);
+    font-family: 'Segoe UI', 'Inter', sans-serif;
+}
+
+/* Header */
+.ai-insights-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #004643, #006b5f);
+    gap: 1rem;
+    box-shadow: 0 4px 16px rgba(0, 70, 67, 0.3);
+}
+
+.ai-insights-header .back-btn {
+    color: #fff !important;
+}
+
+.ai-insights-header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.ai-insights-header-title h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 1.3rem;
+}
+
+.ai-insights-header-title .header-icon {
+    font-size: 1.8rem;
+    color: #4ecdc4;
+}
+
+.ai-insights-header-title .header-subtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+}
+
+.refresh-btn {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+}
+
+.refresh-btn:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Loading */
+.insights-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+}
+
+/* Body */
+.ai-insights-body {
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Stats Row */
+.stats-row {
+    margin-bottom: 1.5rem !important;
+}
+
+.stat-card {
+    border-radius: 16px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+    color: #fff;
+    font-size: 1.2rem;
+}
+
+.stat-value .ant-statistic-title {
+    color: #666;
+    font-size: 0.75rem;
+}
+
+.stat-value .ant-statistic-content-value {
+    color: #004643;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+/* Insights Card */
+.insights-card {
+    border-radius: 16px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    min-height: 400px;
+}
+
+.insights-card .ant-card-head-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #004643;
+}
+
+.insights-content {
+    line-height: 1.7;
+}
+
+.insight-item {
+    margin-bottom: 8px;
+    margin-left: 16px;
+    padding: 6px 0;
+    list-style-type: disc;
+}
+
+.insight-item.warning {
+    color: #d48806;
+}
+
+/* Side Cards */
+.side-card {
+    border-radius: 16px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+}
+
+.side-card .ant-card-head-title {
+    font-weight: 600;
+    color: #004643;
+    font-size: 0.9rem;
+}
+
+.course-row, .attendance-row, .student-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.course-row:last-child, .attendance-row:last-child, .student-row:last-child {
+    border-bottom: none;
+}
+
+.warning-card {
+    border-left: 4px solid #faad14 !important;
+}
+
+/* Department Chart placeholder */
+.dept-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.dept-bar-fill {
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #004643, #4ecdc4);
+    min-width: 20px;
+    transition: width 0.5s ease;
+}
+
+@media (max-width: 768px) {
+    .stats-row .ant-col {
+        flex: 0 0 50%;
+    }
+}

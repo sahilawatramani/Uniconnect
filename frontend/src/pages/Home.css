@@ -300,3 +300,64 @@
     text-align: center;
     margin-top: 2rem;
 }
+
+/* ===== AI Section Styles ===== */
+
+/* AI Divider */
+.ai-divider {
+    margin: 2.5rem 0 1.5rem !important;
+}
+
+.ai-divider-text {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #004643;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ai-divider-text .anticon {
+    font-size: 1.4rem;
+    color: #4ecdc4;
+}
+
+/* AI Cards */
+.ai-card {
+    border: 2px solid transparent !important;
+    background: linear-gradient(135deg, #ffffff, #f0fdf4) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #004643, #4ecdc4, #007f5f);
+}
+
+.ai-card:hover {
+    border-color: #4ecdc4 !important;
+    transform: translateY(-6px) scale(1.05);
+}
+
+.ai-icon {
+    color: #4ecdc4 !important;
+}
+
+.ai-card-desc {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 12px;
+    min-height: 32px;
+}
+
+.ai-card-btn {
+    background: linear-gradient(135deg, #004643, #007f5f) !important;
+    border: none !important;
+}
+

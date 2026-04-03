@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Row, Col, Button } from 'antd';
+import { Card, Row, Col, Button, Divider } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
     UserOutlined,
@@ -9,6 +9,10 @@ import {
     HomeOutlined,
     TeamOutlined,
     CheckCircleOutlined,
+    RobotOutlined,
+    CommentOutlined,
+    TrophyOutlined,
+    BarChartOutlined,
 } from '@ant-design/icons';
 import './Home.css';
 
@@ -23,6 +27,33 @@ const Home = () => {
         { title: 'Manage Classrooms', path: '/classrooms', icon: <HomeOutlined className="card-icon" /> },
         { title: 'Manage Alumni', path: '/alumni', icon: <TeamOutlined className="card-icon" /> },
         { title: 'View Attendance', path: '/attendance', icon: <CheckCircleOutlined className="card-icon" /> },
+    ];
+
+    const aiSections = [
+        {
+            title: 'AI Assistant',
+            path: '/ai-chat',
+            icon: <CommentOutlined className="card-icon ai-icon" />,
+            description: 'Query database using natural language'
+        },
+        {
+            title: 'Learning Hub',
+            path: '/ai-learn',
+            icon: <RobotOutlined className="card-icon ai-icon" />,
+            description: 'Upload materials & learn with AI'
+        },
+        {
+            title: 'Take Quiz',
+            path: '/ai-quiz',
+            icon: <TrophyOutlined className="card-icon ai-icon" />,
+            description: 'AI-generated quizzes on any topic'
+        },
+        {
+            title: 'Smart Insights',
+            path: '/ai-insights',
+            icon: <BarChartOutlined className="card-icon ai-icon" />,
+            description: 'AI-powered analytics & reports'
+        },
     ];
 
     return (
@@ -49,7 +80,7 @@ const Home = () => {
             {/* Dashboard Title */}
             <h1 className="dashboard-title">UniConnect Dashboard</h1>
 
-            {/* Cards Section */}
+            {/* Management Cards Section */}
             <Row gutter={[16, 16]}>
                 {sections.map((section, index) => (
                     <Col xs={24} sm={12} md={8} lg={6} key={index}>
@@ -68,6 +99,42 @@ const Home = () => {
                                 type="primary"
                                 onClick={() => navigate(section.path)}
                                 block
+                            >
+                                Open {section.title}
+                            </Button>
+                        </Card>
+                    </Col>
+                ))}
+            </Row>
+
+            {/* AI Section Divider */}
+            <Divider className="ai-divider">
+                <span className="ai-divider-text">
+                    <RobotOutlined /> AI-Powered Features
+                </span>
+            </Divider>
+
+            {/* AI Cards Section */}
+            <Row gutter={[16, 16]}>
+                {aiSections.map((section, index) => (
+                    <Col xs={24} sm={12} md={6} key={index}>
+                        <Card
+                            title={
+                                <div className="card-title-with-icon">
+                                    {section.icon}
+                                    <span>{section.title}</span>
+                                </div>
+                            }
+                            bordered={false}
+                            className="dashboard-card ai-card"
+                            hoverable
+                        >
+                            <p className="ai-card-desc">{section.description}</p>
+                            <Button
+                                type="primary"
+                                onClick={() => navigate(section.path)}
+                                block
+                                className="ai-card-btn"
                             >
                                 Open {section.title}
                             </Button>
