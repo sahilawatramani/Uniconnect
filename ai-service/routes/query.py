@@ -20,7 +20,8 @@ class QueryRequest(BaseModel):
 
 def get_db_connection():
     """Create a fresh database connection."""
-    return psycopg2.connect(DATABASE_URL, sslmode="require")
+    ssl_mode = "require" if "render.com" in (DATABASE_URL or "") else "prefer"
+    return psycopg2.connect(DATABASE_URL, sslmode=ssl_mode)
 
 
 def validate_sql(sql: str) -> bool:
@@ -103,7 +104,14 @@ SQL QUERY:"""
         try:
             cursor.execute(sql_query)
             columns = [desc[0] for desc in cursor.description]
-            rows = cursor.fetchall()
+            rows = cursor.fetchmany(100) # Only fetch first 100 rows to prevent OOM
+            
+            try:
+                # Calculate real total row count without loading all rows into python
+                cursor.execute(f"SELECT COUNT(*) FROM ({sql_query}) AS subq")
+                total_rows = cursor.fetchone()[0]
+            except:
+                total_rows = len(rows)
             
             # Convert to list of dicts
             data = [dict(zip(columns, row)) for row in rows]
@@ -139,8 +147,8 @@ Please provide a clear, friendly, human-readable response summarizing this data.
         return {
             "answer": formatted_answer,
             "sql": sql_query,
-            "data": data[:100],  # Limit to 100 rows for frontend
-            "total_rows": len(data)
+            "data": data,  # Already limited to 100 max
+            "total_rows": total_rows
         }
         
     except psycopg2.Error as db_error:

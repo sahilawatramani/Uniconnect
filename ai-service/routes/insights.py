@@ -12,7 +12,8 @@ router = APIRouter()
 
 
 def get_db_connection():
-    return psycopg2.connect(DATABASE_URL, sslmode="require")
+    ssl_mode = "require" if "render.com" in (DATABASE_URL or "") else "prefer"
+    return psycopg2.connect(DATABASE_URL, sslmode=ssl_mode)
 
 
 def run_aggregate_queries() -> dict:

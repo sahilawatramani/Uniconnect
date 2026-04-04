@@ -3,11 +3,12 @@ require('dotenv').config();
 const { Pool } = require('pg');
 
 const isProduction = process.env.NODE_ENV === 'production';
+const isRenderDB = (process.env.DATABASE_URL || '').includes('render.com');
 
 // Create a PostgreSQL connection pool
 const db = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: isProduction ? { rejectUnauthorized: false } : false,
+  ssl: (isProduction || isRenderDB) ? { rejectUnauthorized: false } : false,
 });
 
 // Test the database connection

@@ -225,7 +225,7 @@ const AiQuiz = () => {
                                             <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 20 }} /> :
                                             <CloseCircleOutlined style={{ color: '#f5222d', fontSize: 20 }} />
                                     )}
-                                </div>!
+                                </div>
                                 <Text strong className="question-text">{q.question}</Text>
 
                                 <Radio.Group

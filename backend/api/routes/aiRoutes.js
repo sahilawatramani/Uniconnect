@@ -24,14 +24,15 @@ const upload = multer({
 router.post('/query', async (req, res) => {
     try {
         const response = await axios.post(`${AI_SERVICE_URL}/ai/query`, req.body, {
-            timeout: 30000
+            timeout: 120000
         });
         res.json(response.data);
     } catch (error) {
         console.error('AI Query Error:', error.response?.data || error.message);
-        res.status(error.response?.status || 500).json({
-            error: error.response?.data?.detail || 'Failed to process AI query'
-        });
+        const msg = error.code === 'ECONNABORTED'
+            ? 'AI query timed out. Ollama may still be loading the model — try again in a moment.'
+            : (error.response?.data?.detail || 'Failed to process AI query');
+        res.status(error.response?.status || 500).json({ error: msg });
     }
 });
 
@@ -50,7 +51,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
         const response = await axios.post(`${AI_SERVICE_URL}/ai/upload`, formData, {
             headers: formData.getHeaders(),
-            timeout: 60000
+            timeout: 180000
         });
         res.json(response.data);
     } catch (error) {
@@ -65,7 +66,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 router.post('/ask', async (req, res) => {
     try {
         const response = await axios.post(`${AI_SERVICE_URL}/ai/ask`, req.body, {
-            timeout: 30000
+            timeout: 120000
         });
         res.json(response.data);
     } catch (error) {
@@ -95,7 +96,7 @@ router.get('/documents', async (req, res) => {
 router.post('/quiz', async (req, res) => {
     try {
         const response = await axios.post(`${AI_SERVICE_URL}/ai/quiz`, req.body, {
-            timeout: 30000
+            timeout: 120000
         });
         res.json(response.data);
     } catch (error) {
@@ -110,7 +111,7 @@ router.post('/quiz', async (req, res) => {
 router.post('/insights', async (req, res) => {
     try {
         const response = await axios.post(`${AI_SERVICE_URL}/ai/insights`, req.body, {
-            timeout: 30000
+            timeout: 120000
         });
         res.json(response.data);
     } catch (error) {
