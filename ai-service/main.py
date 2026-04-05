@@ -6,6 +6,7 @@ FastAPI server for AI features: NL-to-SQL, RAG, Quiz Generator, Smart Insights.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import OLLAMA_BASE_URL, OLLAMA_MODEL
+# Trigger reload to load new .env variables
 from routes.query import router as query_router
 from routes.rag import router as rag_router
 from routes.quiz import router as quiz_router

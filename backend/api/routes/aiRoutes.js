@@ -66,7 +66,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 router.post('/ask', async (req, res) => {
     try {
         const response = await axios.post(`${AI_SERVICE_URL}/ai/ask`, req.body, {
-            timeout: 120000
+            timeout: 300000
         });
         res.json(response.data);
     } catch (error) {

@@ -59,7 +59,7 @@ def save_index():
             json.dump({'chunks': text_chunks, 'documents': document_names}, f)
 
 
-def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list:
+def chunk_text(text: str, chunk_size: int = 300, overlap: int = 30) -> list:
     """Split text into overlapping chunks."""
     words = text.split()
     chunks = []
@@ -145,8 +145,8 @@ async def ask_question(request: AskRequest):
         question_embedding = embedding_model.encode([request.question])
         question_embedding = np.array(question_embedding).astype('float32')
         
-        # Search FAISS for top-k relevant chunks
-        k = min(5, len(text_chunks))
+        # Search FAISS for top-k relevant chunks (reduced to 3 to prevent LLM OOM/Timeout on local machines)
+        k = min(3, len(text_chunks))
         distances, indices = faiss_index.search(question_embedding, k)
         
         # Gather relevant context
