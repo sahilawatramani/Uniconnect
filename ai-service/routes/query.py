@@ -68,13 +68,24 @@ def extract_sql(response_text: str) -> str:
 async def query_database(request: QueryRequest):
     """Convert natural language to SQL, execute, and return formatted response."""
     try:
-        # Step 1: Generate SQL from natural language
-        sql_prompt = f"""You are a PostgreSQL SQL expert. Given the following database schema and a natural language question, generate ONLY a valid PostgreSQL SELECT query. Do not include any explanation, just the SQL query.
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        last_error = ""
+        sql_query = ""
+        rows = []
+        columns = []
+        total_rows = 0
+        
+        for attempt in range(3):
+            # Step 1: Generate SQL from natural language
+            error_hint = f"\n\nYOUR PREVIOUS QUERY FAILED WITH THIS ERROR: {last_error}\nPLEASE FIX THE SQL QUERY SO IT EXECUTES SUCCESSFULLY." if last_error else ""
+            sql_prompt = f"""You are a PostgreSQL SQL expert. Given the following database schema and a natural language question, generate ONLY a valid PostgreSQL SELECT query. Do not include any explanation, just the SQL query.
 
 DATABASE SCHEMA:
 {SCHEMA}
 
-USER QUESTION: {request.question}
+USER QUESTION: {request.question}{error_hint}
 
 IMPORTANT RULES:
 - Generate ONLY SELECT queries (no INSERT, UPDATE, DELETE, etc.)
@@ -87,45 +98,53 @@ IMPORTANT RULES:
 
 SQL QUERY:"""
 
-        sql_response = get_gemini_response(sql_prompt)
-        sql_query = extract_sql(sql_response)
-        
-        # Remove trailing semicolons for psycopg2
-        sql_query = sql_query.rstrip(';').strip()
-        
-        # Step 2: Validate SQL (security check)
-        if not validate_sql(sql_query + ';'):
-            raise HTTPException(status_code=400, detail="Only SELECT queries are allowed for security.")
-        
-        # Step 3: Execute SQL
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        try:
-            cursor.execute(sql_query)
-            columns = [desc[0] for desc in cursor.description]
-            rows = cursor.fetchmany(100) # Only fetch first 100 rows to prevent OOM
+            sql_response = get_gemini_response(sql_prompt)
+            sql_query = extract_sql(sql_response)
             
+            # Remove trailing semicolons for psycopg2
+            sql_query = sql_query.rstrip(';').strip()
+            
+            # Step 2: Validate SQL (security check)
+            if not validate_sql(sql_query + ';'):
+                raise HTTPException(status_code=400, detail="Only SELECT queries are allowed for security.")
+            
+            # Step 3: Execute SQL
             try:
-                # Calculate real total row count without loading all rows into python
-                cursor.execute(f"SELECT COUNT(*) FROM ({sql_query}) AS subq")
-                total_rows = cursor.fetchone()[0]
-            except:
-                total_rows = len(rows)
+                cursor.execute(sql_query)
+                columns = [desc[0] for desc in cursor.description]
+                rows = cursor.fetchmany(100) # Only fetch first 100 rows to prevent OOM
+                
+                try:
+                    # Calculate real total row count without loading all rows into python
+                    cursor.execute(f"SELECT COUNT(*) FROM ({sql_query}) AS subq")
+                    total_rows = cursor.fetchone()[0]
+                except Exception:
+                    total_rows = len(rows)
+                
+                break # Success! Exit the retry loop
+                
+            except psycopg2.Error as e:
+                conn.rollback() # Important: reset transaction state after error
+                last_error = str(e).strip()
+                if attempt == 2:
+                    cursor.close()
+                    conn.close()
+                    raise HTTPException(status_code=500, detail=f"Database error after 3 attempts: {last_error}")
             
-            # Convert to list of dicts
-            data = [dict(zip(columns, row)) for row in rows]
-            
-            # Make data JSON-serializable
-            for row in data:
-                for key, value in row.items():
-                    if hasattr(value, 'isoformat'):
-                        row[key] = value.isoformat()
-                    elif isinstance(value, (bytes, bytearray)):
-                        row[key] = str(value)
-        finally:
-            cursor.close()
-            conn.close()
+        # Convert to list of dicts
+        data = [dict(zip(columns, row)) for row in rows]
+        
+        # Make data JSON-serializable
+        for row in data:
+            for key, value in row.items():
+                if hasattr(value, 'isoformat'):
+                    row[key] = value.isoformat()
+                elif isinstance(value, (bytes, bytearray)):
+                    row[key] = str(value)
+                    
+        # Clean up database connection
+        cursor.close()
+        conn.close()
         
         # Step 4: Format response with Gemini
         format_prompt = f"""You are a strict data formatting assistant. A user asked: "{request.question}"
