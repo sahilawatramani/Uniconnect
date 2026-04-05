@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Input, Button, Card, Spin, Typography, Collapse, Table, message } from 'antd';
+import { Input, Button, Card, Spin, Typography, message } from 'antd';
 import { SendOutlined, RobotOutlined, UserOutlined, DatabaseOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './AiChat.css';
 
 const { Text, Paragraph } = Typography;
-const { Panel } = Collapse;
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -79,28 +78,7 @@ const AiChat = () => {
         }
     };
 
-    const renderDataTable = (data) => {
-        if (!data || data.length === 0) return null;
 
-        const columns = Object.keys(data[0]).map(key => ({
-            title: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-            dataIndex: key,
-            key: key,
-            ellipsis: true,
-        }));
-
-        return (
-            <Table
-                columns={columns}
-                dataSource={data.slice(0, 10)}
-                rowKey={(record, index) => index}
-                size="small"
-                pagination={false}
-                scroll={{ x: true }}
-                className="chat-data-table"
-            />
-        );
-    };
 
     const formatContent = (content) => {
         // Simple markdown-like formatting
