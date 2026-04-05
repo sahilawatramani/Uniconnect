@@ -62,7 +62,7 @@ TABLE: alumni
   - current_job_title (VARCHAR)
   - company (VARCHAR)
 
-RELATIONSHIPS:
+RELATIONSHIPS (STRICT RULES - DO NOT INVENT COLUMNS):
   - students.department_id -> departments.department_id
   - instructors.department_id -> departments.department_id
   - courses.department_id -> departments.department_id
@@ -73,9 +73,15 @@ RELATIONSHIPS:
   - alumni.student_id -> students.student_id
 
 HINTS FOR CALCULATING METRICS AND SQL GENERATION:
-1. "Course Enrollment" / "Highest Enrollment": This means the number of students registered for a course. Calculate by grouping by courses.course_id or course_name and using COUNT(enrollments.student_id). Do NOT involve dates.
-2. "Attendance percentage": Calculate as (COUNT(CASE WHEN attendance.status = 'Present' THEN 1 END) * 100.0) / NULLIF(COUNT(attendance.status), 0). Group by student or course as requested.
+1. "Course Enrollment" / "Highest Enrollment": Calculate by grouping by courses.course_id and courses.course_name and using COUNT(enrollments.student_id). Do NOT involve dates.
+2. "Attendance percentage": Calculate as (COUNT(CASE WHEN attendance.status = 'Present' THEN 1 END) * 100.0) / NULLIF(COUNT(attendance.status), 0).
 3. "Highest/Top": Use ORDER BY [metric] DESC LIMIT 1 (or requested number).
 4. "Lowest/Bottom": Use ORDER BY [metric] ASC LIMIT 1.
-5. "Student Count per Department": Group by departments.department_name and COUNT(students.student_id).
+
+EXAMPLES:
+Q: List students with attendance below 75%
+A: SELECT s.name, (COUNT(CASE WHEN a.status = 'Present' THEN 1 END) * 100.0) / NULLIF(COUNT(a.status), 0) AS attendance_percent FROM students s JOIN attendance a ON s.student_id = a.student_id GROUP BY s.student_id, s.name HAVING (COUNT(CASE WHEN a.status = 'Present' THEN 1 END) * 100.0) / NULLIF(COUNT(a.status), 0) < 75;
+
+Q: Which course has the highest enrollment?
+A: SELECT c.course_name, COUNT(e.student_id) AS enrollment_count FROM courses c JOIN enrollments e ON c.course_id = e.course_id GROUP BY c.course_id, c.course_name ORDER BY enrollment_count DESC LIMIT 1;
 """
