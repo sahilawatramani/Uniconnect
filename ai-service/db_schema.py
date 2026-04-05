@@ -84,4 +84,16 @@ A: SELECT s.name, (COUNT(CASE WHEN a.status = 'Present' THEN 1 END) * 100.0) / N
 
 Q: Which course has the highest enrollment?
 A: SELECT c.course_name, COUNT(e.student_id) AS enrollment_count FROM courses c JOIN enrollments e ON c.course_id = e.course_id GROUP BY c.course_id, c.course_name ORDER BY enrollment_count DESC LIMIT 1;
+
+Q: Show all students in the Computer Science department
+A: SELECT s.name, s.email FROM students s JOIN departments d ON s.department_id = d.department_id WHERE d.department_name ILIKE '%Computer Science%';
+
+Q: List the alumni who graduated in 2023 along with their current job titles
+A: SELECT s.name, a.graduation_year, a.current_job_title FROM alumni a JOIN students s ON a.student_id = s.student_id WHERE a.graduation_year = 2023;
+
+Q: How many classrooms have a capacity greater than 50?
+A: SELECT COUNT(classroom_id) AS large_classrooms FROM classrooms WHERE capacity > 50;
+
+Q: Find the names of instructors teaching in departments with 4-credit courses
+A: SELECT DISTINCT i.name FROM instructors i JOIN courses c ON i.department_id = c.department_id WHERE c.credits >= 4;
 """
