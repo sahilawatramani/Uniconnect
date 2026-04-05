@@ -22,3 +22,5 @@ services:
         fromDatabase:
           name: uniconnect-db
           property: connectionString
+      - key: AI_SERVICE_URL
+        value: https://telescope-statutory-robert-audio.trycloudflare.com
