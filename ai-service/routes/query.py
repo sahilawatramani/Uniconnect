@@ -128,19 +128,18 @@ SQL QUERY:"""
             conn.close()
         
         # Step 4: Format response with Gemini
-        format_prompt = f"""You are a helpful university data assistant. A user asked: "{request.question}"
+        format_prompt = f"""You are a strict data formatting assistant. A user asked: "{request.question}"
 
-The database returned the following data:
+The database returned the following JSON data:
 {json.dumps(data[:50], indent=2, default=str)}
 
 Total rows returned: {len(data)}
 
-Please provide a clear, friendly, human-readable response summarizing this data. 
-- Use bullet points or numbered lists for multiple items
-- Highlight key statistics or findings
-- If the data is empty, say so politely
-- Keep it concise but informative
-- Do NOT include any SQL or technical details"""
+Please provide a clear, friendly, human-readable response summarizing EXACTLY this data.
+- DO NOT invent, hallucinate, or bring in outside information. Only use the JSON provided above.
+- If the data is empty, say so politely.
+- Keep it concise but informative.
+- Do NOT include any SQL or technical details."""
 
         formatted_answer = get_gemini_response(format_prompt)
         
