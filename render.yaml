@@ -23,4 +23,4 @@ services:
           name: uniconnect-db
           property: connectionString
       - key: AI_SERVICE_URL
-        value: https://telescope-statutory-robert-audio.trycloudflare.com
+        value: https://calculated-copper-one-hygiene.trycloudflare.com
