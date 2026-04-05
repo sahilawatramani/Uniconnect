@@ -71,4 +71,11 @@ RELATIONSHIPS:
   - attendance.student_id -> students.student_id
   - attendance.course_id -> courses.course_id
   - alumni.student_id -> students.student_id
+
+HINTS FOR CALCULATING METRICS AND SQL GENERATION:
+1. "Course Enrollment" / "Highest Enrollment": This means the number of students registered for a course. Calculate by grouping by courses.course_id or course_name and using COUNT(enrollments.student_id). Do NOT involve dates.
+2. "Attendance percentage": Calculate as (COUNT(CASE WHEN attendance.status = 'Present' THEN 1 END) * 100.0) / NULLIF(COUNT(attendance.status), 0). Group by student or course as requested.
+3. "Highest/Top": Use ORDER BY [metric] DESC LIMIT 1 (or requested number).
+4. "Lowest/Bottom": Use ORDER BY [metric] ASC LIMIT 1.
+5. "Student Count per Department": Group by departments.department_name and COUNT(students.student_id).
 """
