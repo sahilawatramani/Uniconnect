@@ -163,24 +163,7 @@ const AiChat = () => {
                                     {formatContent(msg.content)}
                                 </div>
 
-                                {/* SQL Query (collapsible) */}
-                                {msg.sql && (
-                                    <Collapse ghost size="small" className="sql-collapse">
-                                        <Panel header="🔍 View SQL Query" key="1">
-                                            <pre className="sql-code">{msg.sql}</pre>
-                                        </Panel>
-                                    </Collapse>
-                                )}
-
-                                {/* Data Table */}
-                                {msg.data && msg.data.length > 0 && (
-                                    <div className="message-data">
-                                        <Text type="secondary" style={{ fontSize: 12 }}>
-                                            Showing {Math.min(10, msg.data.length)} of {msg.totalRows} rows
-                                        </Text>
-                                        {renderDataTable(msg.data)}
-                                    </div>
-                                )}
+                                {/* Data Table was removed to only show answer */}
                             </Card>
                             <Text className="message-time" type="secondary">
                                 {msg.timestamp.toLocaleTimeString()}
