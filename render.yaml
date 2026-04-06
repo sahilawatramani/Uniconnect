@@ -23,4 +23,4 @@ services:
           name: uniconnect-db
           property: connectionString
       - key: AI_SERVICE_URL
-        value: https://calculated-copper-one-hygiene.trycloudflare.com
+        value: https://formalistic-political-cortney.ngrok-free.dev
