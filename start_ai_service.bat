@@ -14,7 +14,7 @@ echo Configuring Ngrok Authtoken...
 .\ngrok.exe config add-authtoken 3ByUGccHf8SGsxVlRSqa3mWxtEL_5wBZP8hYFLDPdTvxkinCW
 
 echo Starting Ngrok Tunnel...
-start "Ngrok Tunnel (DO NOT CLOSE)" cmd /k "title Ngrok Tunnel && .\ngrok.exe http --domain=formalistic-political-cortney.ngrok-free.dev 8000"
+start "Ngrok Tunnel (DO NOT CLOSE)" cmd /k "title Ngrok Tunnel && .\ngrok.exe http --domain=formalistic-political-cortney.ngrok-free.dev 127.0.0.1:8000"
 
 echo.
 echo ===================================================
