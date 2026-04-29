@@ -67,7 +67,7 @@ const Home = () => {
     return (
         <div className="home-page">
             {/* Hero Section */}
-            <div className="hero-section">
+            <section className="hero-section">
                 <div className="hero-content animate-fade-in-up">
                     <div className="hero-greeting">
                         <span className="greeting-wave">👋</span>

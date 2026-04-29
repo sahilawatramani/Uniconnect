@@ -3,6 +3,7 @@ import { Input, Button, message } from 'antd';
 import { MailOutlined, LockOutlined, ThunderboltOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import universityImg from '../University.jpg';
 import './Login.css';
 
 const Login = () => {
@@ -33,13 +34,17 @@ const Login = () => {
 
     return (
         <div className="auth-page">
-            {/* Background orbs */}
-            <div className="auth-orb orb-1" />
-            <div className="auth-orb orb-2" />
-            <div className="auth-orb orb-3" />
+            <div className="auth-media" style={{ backgroundImage: `url(${universityImg})` }}>
+                <div className="auth-media-overlay" />
+                <div className="auth-media-content animate-slide-in-left">
+                    <h2>Welcome to Symbiosis Institute</h2>
+                    <p>Access your personalized dashboard to manage your academic journey, track attendance, and explore insights.</p>
+                </div>
+            </div>
 
-            <div className="auth-card animate-fade-in-up">
-                {/* Logo */}
+            <div className="auth-content">
+                <div className="auth-card animate-fade-in-up">
+                    {/* Logo */}
                 <div className="auth-logo">
                     <div className="auth-logo-icon">
                         <ThunderboltOutlined />

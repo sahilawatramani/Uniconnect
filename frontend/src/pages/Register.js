@@ -4,6 +4,7 @@ import { MailOutlined, LockOutlined, UserOutlined, ThunderboltOutlined, EyeOutli
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import universityImg from '../University.jpg';
 import './Login.css'; // Shared auth styles
 
 const { Option } = Select;
@@ -86,13 +87,17 @@ const Register = () => {
 
     return (
         <div className="auth-page">
-            {/* Background orbs */}
-            <div className="auth-orb orb-1" />
-            <div className="auth-orb orb-2" />
-            <div className="auth-orb orb-3" />
+            <div className="auth-media" style={{ backgroundImage: `url(${universityImg})` }}>
+                <div className="auth-media-overlay" />
+                <div className="auth-media-content animate-slide-in-left">
+                    <h2>Join Symbiosis Institute</h2>
+                    <p>Create an account to connect with the campus, view your courses, and access AI-driven educational insights.</p>
+                </div>
+            </div>
 
-            <div className="auth-card animate-fade-in-up">
-                {/* Logo */}
+            <div className="auth-content">
+                <div className="auth-card animate-fade-in-up">
+                    {/* Logo */}
                 <div className="auth-logo">
                     <div className="auth-logo-icon">
                         <ThunderboltOutlined />
