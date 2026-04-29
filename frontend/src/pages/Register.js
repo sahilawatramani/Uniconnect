@@ -41,6 +41,18 @@ const Register = () => {
             return;
         }
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            message.warning('Please enter a valid email address.');
+            return;
+        }
+
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            message.warning('Password must be at least 8 characters, with 1 uppercase, 1 lowercase, 1 number, and 1 special character.');
+            return;
+        }
+
         if (role === 'student' && !studentId) {
             message.warning('Please select your student ID.');
             return;
@@ -48,11 +60,6 @@ const Register = () => {
 
         if (role === 'admin' && !adminCode.trim()) {
             message.warning('Admin authorization code is required.');
-            return;
-        }
-
-        if (password.length < 6) {
-            message.warning('Password must be at least 6 characters.');
             return;
         }
 

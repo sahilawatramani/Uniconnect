@@ -8,6 +8,9 @@ const { JWT_SECRET, authenticate } = require('../middleware/authMiddleware');
 const SALT_ROUNDS = 10;
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'UNICONNECT2026';
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
     try {
@@ -16,6 +19,14 @@ router.post('/register', async (req, res) => {
         // Validate required fields
         if (!username || !email || !password) {
             return res.status(400).json({ error: 'Username, email, and password are required.' });
+        }
+
+        // Regex validations
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Invalid email format.' });
+        }
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.' });
         }
 
         // Validate role

@@ -1,22 +1,35 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { authenticate, optionalAuth } = require('./api/middleware/authMiddleware');
 
 const app = express();
 const port = process.env.PORT || 5000;
 
-// CORS — allow all origins
-app.use(cors({
-  origin: '*',
-}));
+// Security headers
+app.use(helmet());
+
+// CORS config
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || '*',
+};
+app.use(cors(corsOptions));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Rate limiter for auth routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 requests per windowMs
+  message: { error: 'Too many requests from this IP, please try again after 15 minutes' }
+});
+
 // Auth routes (no authentication required)
 const authRoutes = require('./api/routes/authRoutes');
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 
 // Apply authentication middleware to all routes below
 app.use(authenticate);
