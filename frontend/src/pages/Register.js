@@ -19,6 +19,8 @@ const Register = () => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [adminCode, setAdminCode] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const navigate = useNavigate();
     const { register } = useAuth();
 
@@ -161,11 +163,22 @@ const Register = () => {
                             prefix={<MailOutlined className="field-icon" />}
                             placeholder="Enter your email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => {
+                                setEmail(e.target.value);
+                                if (emailError) setEmailError('');
+                            }}
+                            onBlur={() => {
+                                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                if (email && !emailRegex.test(email.trim())) {
+                                    setEmailError('Please enter a valid email address.');
+                                }
+                            }}
+                            status={emailError ? 'error' : ''}
                             size="large"
                             className="auth-input"
                             id="register-email"
                         />
+                        {emailError && <div style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px' }}>{emailError}</div>}
                     </div>
 
                     <div className="auth-field">
@@ -178,13 +191,24 @@ const Register = () => {
                                 </span>
                             }
                             type={showPassword ? 'text' : 'password'}
-                            placeholder="Min. 6 characters"
+                            placeholder="Min. 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => {
+                                setPassword(e.target.value);
+                                if (passwordError) setPasswordError('');
+                            }}
+                            onBlur={() => {
+                                const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+                                if (password && !passwordRegex.test(password)) {
+                                    setPasswordError('Must be at least 8 chars, with 1 uppercase, 1 lowercase, 1 number, and 1 special character.');
+                                }
+                            }}
+                            status={passwordError ? 'error' : ''}
                             size="large"
                             className="auth-input"
                             id="register-password"
                         />
+                        {passwordError && <div style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', lineHeight: '1.2' }}>{passwordError}</div>}
                     </div>
 
                     {role === 'student' && (
