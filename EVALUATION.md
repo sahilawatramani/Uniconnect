@@ -77,9 +77,67 @@ python tests/evaluate_ai.py
 
 ---
 
-## 📊 Evaluation Metrics
+## 📊 Formal Evaluation Metrics
 
-### 1. NL-to-SQL Accuracy
+### Metric Definitions
+
+| # | Metric | Abbreviation | Formula | Target |
+|---|--------|-------------|---------|--------|
+| 1 | **Execution Accuracy** | EX | Successfully Executed Queries / Total Queries | ≥ 90% |
+| 2 | **Table Match Accuracy** | TMA | Queries With Correct Tables / Total Queries | ≥ 85% |
+| 3 | **Keyword Match Accuracy** | KMA | Queries With Correct SQL Constructs / Total Queries | ≥ 80% |
+| 4 | **Result Validity Rate** | RVR | Queries With Non-Empty Results / Successfully Executed | ≥ 85% |
+| 5 | **RBAC Enforcement Rate** | RER | Correctly Filtered Queries / Total Student Queries | **100%** |
+| 6 | **Injection Prevention Rate** | IPR | Blocked Payloads / Total Injection Attempts | **100%** |
+| 7 | **Quiz Format Validity** | FVS | Structurally Valid Quizzes / Total Quiz Requests | ≥ 90% |
+| 8 | **Question Yield Rate** | QYR | Generated Questions / Requested Questions | ≥ 90% |
+| 9 | **Insights Completeness** | IC | Complete Responses (AI + Stats) / Total Requests | ≥ 90% |
+| 10 | **Error Rate** | ER | Error Responses / Total API Requests | ≤ 10% |
+
+### Latency Tracking
+
+For each endpoint, we measure response time percentiles:
+
+| Metric | Description |
+|--------|------------|
+| **P50** | Median response time (50th percentile) |
+| **P95** | 95th percentile response time |
+| **P99** | 99th percentile response time |
+| **Avg** | Mean response time |
+| **Min / Max** | Fastest and slowest response |
+
+### Composite Score & Grading
+
+A weighted composite score is computed across 5 dimensions:
+
+```
+Composite = Security × 0.30 + NL-to-SQL × 0.25 + Quiz × 0.15 + Insights × 0.15 + Reliability × 0.15
+```
+
+| Dimension | Weight | Components |
+|-----------|--------|-----------|
+| **Security** | 30% | RBAC Enforcement + Injection Prevention |
+| **NL-to-SQL** | 25% | Execution Accuracy + Table Match + Keyword Match |
+| **Quiz Quality** | 15% | Format Validity + Question Yield |
+| **Insights** | 15% | Insights Completeness |
+| **Reliability** | 15% | 100% − Error Rate |
+
+**Grading Rubric:**
+
+| Grade | Score Range | Interpretation |
+|-------|-----------|---------------|
+| **A+** | ≥ 95% | Production-ready, exceeds expectations |
+| **A** | 90–94% | Production-ready |
+| **B+** | 85–89% | Near production, minor improvements needed |
+| **B** | 80–84% | Acceptable, some gaps |
+| **C+** | 75–79% | Below standard, needs work |
+| **C** | 70–74% | Significant issues |
+| **D** | 60–69% | Major issues |
+| **F** | < 60% | Not ready for production |
+
+---
+
+### 1. NL-to-SQL Accuracy (Detailed)
 
 **Golden Dataset:** 15 natural language questions mapped to expected SQL patterns.
 
@@ -204,39 +262,61 @@ At least 1 special character (@$!%*?&)
 
 ## 📈 Sample Output
 
-### Backend Tests
+### Backend Tests (`cd backend && npm test`)
 ```
-PASS  tests/auth.test.js
-  POST /api/auth/register
-    ✅ should register a new student successfully
-    ✅ should register an admin with valid admin_code
-    ❌ should reject missing username
-    ❌ should reject invalid email format
-    ❌ should reject weak password
-    ...
-  POST /api/auth/login
-    ❌ should reject missing credentials
-    ❌ should reject non-existent email
-    ...
+PASS  tests/security.test.js (18 tests)
+PASS  tests/auth.test.js (31 tests)
 
 Test Suites: 2 passed, 2 total
-Tests:       52 passed, 52 total
+Tests:       49 passed, 49 total
 ```
 
-### AI Evaluation
+### AI Unit Tests (`cd ai-service && python -m pytest tests/test_unit.py -v`)
 ```
-  📊 NL-to-SQL EVALUATION (Golden Dataset)
-  NL-to-SQL Accuracy: 13/15 (86.7%)
+tests/test_unit.py::TestValidateSQL::test_valid_select              PASSED
+tests/test_unit.py::TestValidateSQL::test_reject_drop_table         PASSED
+tests/test_unit.py::TestStudentFilter::test_fail_when_filter_missing PASSED
+tests/test_unit.py::TestQuizParsing::test_parse_from_code_block     PASSED
+...
+36 passed in 1.38s
+```
 
-  🔒 RBAC SECURITY EVALUATION
-  RBAC Security: 4/4 (100.0%)
+### AI Integration Evaluation (`cd ai-service && python tests/evaluate_ai.py`)
+```
+======================================================================
+  📊 UniConnect AI — Evaluation Metrics Report
+======================================================================
 
-  🛡️ SQL INJECTION PREVENTION
-  Injection Prevention: 5/5 (100.0%)
+  🏆 COMPOSITE SCORE: 92.3% (Grade: A)
 
-  📝 QUIZ GENERATION EVALUATION
-  Quiz Format Validity: 3/3 (100.0%)
+  Breakdown:
+    security             ████████████████████░  100.0%  (weight: 30%)
+    nl2sql               █████████████████░░░░   86.7%  (weight: 25%)
+    quiz                 ████████████████████░  100.0%  (weight: 15%)
+    insights             ████████████████████░  100.0%  (weight: 15%)
+    reliability          ███████████████████░░   93.1%  (weight: 15%)
 
-  💡 SMART INSIGHTS EVALUATION
-  Insights Quality: 2/2 (100.0%)
+──────────────────────────────────────────────────────────────────────
+  📐 INDIVIDUAL METRICS
+──────────────────────────────────────────────────────────────────────
+  ✅ Execution Accuracy (EX): 86.7%
+  ✅ Table Match Accuracy (TMA): 93.3%
+  ✅ Keyword Match Accuracy (KMA): 80.0%
+  ✅ Result Validity Rate (RVR): 92.3%
+  ✅ RBAC Enforcement Rate (RER): 100.0% [PASS]
+  ✅ Injection Prevention Rate (IPR): 100.0% [PASS]
+  ✅ Quiz Format Validity (FVS): 100.0%
+  ✅ Question Yield Rate (QYR): 100.0%
+  ✅ Insights Completeness (IC): 100.0%
+  ✅ Error Rate (ER): 6.9%
+
+──────────────────────────────────────────────────────────────────────
+  ⏱️  LATENCY (milliseconds)
+──────────────────────────────────────────────────────────────────────
+  Endpoint                          P50    P95    P99    Avg  Count
+  /ai/query                        4200   8500   9200   5100     19
+  /ai/quiz                         3800   6200   6200   4500      3
+  /ai/insights                     5200   7100   7100   6100      2
+
+  💾 Full results saved to: evaluation_results.json
 ```

@@ -527,12 +527,35 @@ def evaluate_insights():
     return results, accuracy
 
 
+# ── Metrics Integration ──
+from tests.metrics import (
+    sql_execution_accuracy, sql_table_accuracy, sql_keyword_accuracy,
+    sql_result_validity, rbac_enforcement_rate, injection_prevention_rate,
+    quiz_format_validity, quiz_question_yield, insights_completeness,
+    error_rate, LatencyTracker, compute_composite_score, generate_report
+)
+
+# Global latency tracker
+latency = LatencyTracker()
+
+
+def post_json_timed(endpoint: str, payload: dict, timeout: int = 60) -> dict:
+    """POST with latency tracking."""
+    start = time.time()
+    result = post_json(endpoint, payload, timeout)
+    elapsed_ms = (time.time() - start) * 1000
+    latency.record(endpoint, elapsed_ms)
+    result["_latency_ms"] = round(elapsed_ms, 1)
+    return result
+
+
 # =============================================
-# MAIN — Run All Evaluations
+# MAIN — Run All Evaluations with Metrics
 # =============================================
 def main():
     print("\n" + "🔬"*30)
     print("  UniConnect AI Evaluation Suite")
+    print("  With Quantitative Metrics & Composite Scoring")
     print("🔬"*30)
 
     # Check health
@@ -544,67 +567,85 @@ def main():
     print(f"\n✅ AI Service: {health.get('service', 'Unknown')} | Model: {health.get('ollama_model', 'Unknown')}")
 
     all_results = {}
-    scores = {}
+    all_metrics = {}
 
     # 1. NL-to-SQL
     try:
         r, s = evaluate_nl2sql()
         all_results["nl2sql"] = r
-        scores["NL-to-SQL Accuracy"] = f"{s:.1f}%"
+        all_metrics["execution_accuracy"] = sql_execution_accuracy(r)
+        all_metrics["table_accuracy"] = sql_table_accuracy(r)
+        all_metrics["keyword_accuracy"] = sql_keyword_accuracy(r)
+        all_metrics["result_validity"] = sql_result_validity(r)
     except Exception as e:
         print(f"\n  ❌ NL-to-SQL evaluation failed: {e}")
-        scores["NL-to-SQL Accuracy"] = "ERROR"
 
     # 2. RBAC
     try:
         r, s = evaluate_rbac()
         all_results["rbac"] = r
-        scores["RBAC Security"] = f"{s:.1f}%"
+        all_metrics["rbac"] = rbac_enforcement_rate(r)
     except Exception as e:
         print(f"\n  ❌ RBAC evaluation failed: {e}")
-        scores["RBAC Security"] = "ERROR"
 
     # 3. SQL Injection
     try:
         r, s = evaluate_sql_injection()
         all_results["sql_injection"] = r
-        scores["SQL Injection Prevention"] = f"{s:.1f}%"
+        all_metrics["injection"] = injection_prevention_rate(r)
     except Exception as e:
         print(f"\n  ❌ SQL Injection evaluation failed: {e}")
-        scores["SQL Injection Prevention"] = "ERROR"
 
     # 4. Quiz
     try:
         r, s = evaluate_quiz()
         all_results["quiz"] = r
-        scores["Quiz Format Validity"] = f"{s:.1f}%"
+        all_metrics["quiz_format"] = quiz_format_validity(r)
+        all_metrics["quiz_yield"] = quiz_question_yield(r)
     except Exception as e:
         print(f"\n  ❌ Quiz evaluation failed: {e}")
-        scores["Quiz Format Validity"] = "ERROR"
 
     # 5. Insights
     try:
         r, s = evaluate_insights()
         all_results["insights"] = r
-        scores["Insights Quality"] = f"{s:.1f}%"
+        all_metrics["insights_completeness"] = insights_completeness(r)
     except Exception as e:
         print(f"\n  ❌ Insights evaluation failed: {e}")
-        scores["Insights Quality"] = "ERROR"
 
-    # ── Final Report ──
-    print("\n" + "="*60)
-    print("  📋 FINAL EVALUATION REPORT")
-    print("="*60)
-    for metric, score in scores.items():
-        icon = "✅" if "ERROR" not in score else "❌"
-        print(f"  {icon} {metric}: {score}")
-    print("="*60)
+    # Compute error rate across all results
+    all_flat = []
+    for category in all_results.values():
+        all_flat.extend(category)
+    all_metrics["error_rate"] = error_rate(all_flat)
 
-    # Save results
+    # Compute composite score
+    composite = compute_composite_score(all_metrics)
+
+    # Get latency stats
+    latency_stats = latency.get_all_stats()
+
+    # Generate and print the report
+    report = generate_report(all_metrics, latency_stats, composite)
+    print("\n" + report)
+
+    # Save full results
+    output = {
+        "composite_score": composite,
+        "metrics": {k: v for k, v in all_metrics.items() if isinstance(v, dict)},
+        "latency": latency_stats,
+        "details": {k: v for k, v in all_results.items()},
+    }
     with open(RESULTS_FILE, "w") as f:
-        json.dump({"scores": scores, "details": all_results}, f, indent=2, default=str)
-    print(f"\n  💾 Detailed results saved to: {RESULTS_FILE}")
+        json.dump(output, f, indent=2, default=str)
+    print(f"\n  💾 Full results saved to: {RESULTS_FILE}")
+
+    # Exit with non-zero if grade is below B
+    if composite["grade"] in ("F", "D", "C", "C+"):
+        print(f"\n  ⚠️  Grade {composite['grade']} is below threshold. Exiting with code 1.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
     main()
+
