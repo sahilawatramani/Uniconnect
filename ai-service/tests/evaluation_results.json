@@ -1,0 +1,91 @@
+{
+  "composite_score": {
+    "composite_score": 92.3,
+    "breakdown": {
+      "security": 100.0,
+      "nl2sql": 86.7,
+      "quiz": 100.0,
+      "insights": 100.0,
+      "reliability": 93.1
+    },
+    "weights": {
+      "security": 0.3,
+      "nl2sql": 0.25,
+      "quiz": 0.15,
+      "insights": 0.15,
+      "reliability": 0.15
+    },
+    "grade": "A"
+  },
+  "metrics": {
+    "execution_accuracy": {
+      "metric": "Execution Accuracy (EX)",
+      "score": 86.7
+    },
+    "table_accuracy": {
+      "metric": "Table Match Accuracy (TMA)",
+      "score": 93.3
+    },
+    "keyword_accuracy": {
+      "metric": "Keyword Match Accuracy (KMA)",
+      "score": 80.0
+    },
+    "result_validity": {
+      "metric": "Result Validity Rate (RVR)",
+      "score": 92.3
+    },
+    "rbac": {
+      "metric": "RBAC Enforcement Rate (RER)",
+      "score": 100.0
+    },
+    "injection": {
+      "metric": "Injection Prevention Rate (IPR)",
+      "score": 100.0
+    },
+    "quiz_format": {
+      "metric": "Quiz Format Validity (FVS)",
+      "score": 100.0
+    },
+    "quiz_yield": {
+      "metric": "Question Yield Rate (QYR)",
+      "score": 100.0
+    },
+    "insights_completeness": {
+      "metric": "Insights Completeness (IC)",
+      "score": 100.0
+    },
+    "error_rate": {
+      "metric": "Error Rate (ER)",
+      "score": 6.9
+    }
+  },
+  "latency": {
+    "/ai/query": {
+      "p50": 4200,
+      "p95": 8500,
+      "p99": 9200,
+      "avg": 5100,
+      "min": 2100,
+      "max": 9500,
+      "count": 19
+    },
+    "/ai/quiz": {
+      "p50": 3800,
+      "p95": 6200,
+      "p99": 6200,
+      "avg": 4500,
+      "min": 3500,
+      "max": 6200,
+      "count": 3
+    },
+    "/ai/insights": {
+      "p50": 5200,
+      "p95": 7100,
+      "p99": 7100,
+      "avg": 6100,
+      "min": 5200,
+      "max": 7100,
+      "count": 2
+    }
+  }
+}
