@@ -6,7 +6,7 @@ import {
     HomeOutlined, TeamOutlined, CheckCircleOutlined, CommentOutlined,
     RobotOutlined, TrophyOutlined, BarChartOutlined, LogoutOutlined,
     MenuFoldOutlined, MenuUnfoldOutlined, DashboardOutlined,
-    ThunderboltOutlined, SettingOutlined
+    ThunderboltOutlined
 } from '@ant-design/icons';
 import { Tooltip } from 'antd';
 import './Layout.css';

@@ -14,6 +14,7 @@ const Departments = () => {
     const [form] = Form.useForm();
     const { authAxios, isAdmin } = useAuth();
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { fetchDepartments(); }, []);
 
     const fetchDepartments = async () => {

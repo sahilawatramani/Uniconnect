@@ -14,6 +14,7 @@ const Alumni = () => {
     const [form] = Form.useForm();
     const { authAxios } = useAuth();
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { fetchAlumni(); }, []);
 
     const fetchAlumni = async () => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, InputNumber, DatePicker, message, Card } from 'antd';
+import { Table, Button, Modal, Form, Input, DatePicker, message, Card } from 'antd';
 import { FileTextOutlined, PlusOutlined } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
 import moment from 'moment';
@@ -15,6 +15,7 @@ const Enrollments = () => {
     const [form] = Form.useForm();
     const { authAxios, isAdmin } = useAuth();
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { fetchEnrollments(); }, []);
 
     const fetchEnrollments = async () => {

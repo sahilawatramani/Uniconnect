@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }) => {
         } else {
             delete authAxios.defaults.headers.Authorization;
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     // Load user profile on mount if token exists

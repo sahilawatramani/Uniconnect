@@ -20,6 +20,7 @@ const Home = () => {
 
     useEffect(() => {
         fetchQuickStats();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchQuickStats = async () => {

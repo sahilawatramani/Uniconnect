@@ -20,6 +20,7 @@ const AiLearn = () => {
     useEffect(() => {
         // Clear stale documents on page mount, then fetch fresh list
         clearAndFetch();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const clearAndFetch = async () => {

@@ -14,6 +14,7 @@ const Courses = () => {
     const [form] = Form.useForm();
     const { authAxios, isAdmin } = useAuth();
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { fetchCourses(); }, []);
 
     const fetchCourses = async () => {
