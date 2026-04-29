@@ -60,8 +60,8 @@ const Home = () => {
         { label: 'Enrollments', value: stats?.total_enrollments || '—', color: '#F59E0B' },
     ] : [
         { label: 'My Courses', value: stats?.total_enrollments || stats?.my_courses?.length || '—', color: '#06B6D4' },
-        { label: 'Attendance', value: stats?.attendance_percentage ? `${stats.attendance_percentage}%` : '—', color: '#10B981' },
-        { label: 'Total Classes', value: stats?.total_classes || '—', color: '#8B5CF6' },
+        { label: 'Attendance', value: stats?.attendance_percentage ? `${stats.attendance_percentage}%` : '—', color: '#059669' },
+        { label: 'Total Classes', value: stats?.total_classes || '—', color: '#7C3AED' },
     ];
 
     return (

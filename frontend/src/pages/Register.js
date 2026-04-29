@@ -87,176 +87,176 @@ const Register = () => {
 
     return (
         <div className="auth-page">
+            {/* Left - University Image */}
             <div className="auth-media" style={{ backgroundImage: `url(${universityImg})` }}>
                 <div className="auth-media-overlay" />
-                <div className="auth-media-content animate-slide-in-left">
+                <div className="auth-media-content">
                     <h2>Join Symbiosis Institute</h2>
                     <p>Create an account to connect with the campus, view your courses, and access AI-driven educational insights.</p>
                 </div>
             </div>
 
+            {/* Right - Registration Form */}
             <div className="auth-content">
-                <div className="auth-card animate-fade-in-up">
-                    {/* Logo */}
-                <div className="auth-logo">
-                    <div className="auth-logo-icon">
-                        <ThunderboltOutlined />
-                    </div>
-                    <h1 className="auth-logo-text">UniConnect</h1>
-                    <p className="auth-subtitle">Smart Campus Management</p>
-                </div>
-
-                {/* Form */}
-                <div className="auth-form">
-                    <h2 className="auth-title">Create Account</h2>
-                    <p className="auth-desc">Register to get started</p>
-
-                    {/* Role Selector */}
-                    <div className="role-selector">
-                        <div
-                            className={`role-option ${role === 'admin' ? 'selected' : ''}`}
-                            onClick={() => setRole('admin')}
-                            id="role-admin"
-                        >
-                            <span className="role-icon">⚡</span>
-                            <span className="role-name">Admin</span>
-                            <span className="role-desc">Full access</span>
+                <div className="auth-card">
+                    <div className="auth-logo">
+                        <div className="auth-logo-icon">
+                            <ThunderboltOutlined />
                         </div>
-                        <div
-                            className={`role-option ${role === 'student' ? 'selected' : ''}`}
-                            onClick={() => setRole('student')}
-                            id="role-student"
-                        >
-                            <span className="role-icon">🎓</span>
-                            <span className="role-name">Student</span>
-                            <span className="role-desc">Personal view</span>
-                        </div>
+                        <h1 className="auth-logo-text">UniConnect</h1>
+                        <p className="auth-subtitle">Smart Campus Management</p>
                     </div>
 
-                    {role === 'admin' && (
+                    <div className="auth-form">
+                        <h2 className="auth-title">Create Account</h2>
+                        <p className="auth-desc">Register to get started</p>
+
+                        {/* Role Selector */}
+                        <div className="role-selector">
+                            <div
+                                className={`role-option ${role === 'admin' ? 'selected' : ''}`}
+                                onClick={() => setRole('admin')}
+                                id="role-admin"
+                            >
+                                <span className="role-icon">⚡</span>
+                                <span className="role-name">Admin</span>
+                                <span className="role-desc">Full access</span>
+                            </div>
+                            <div
+                                className={`role-option ${role === 'student' ? 'selected' : ''}`}
+                                onClick={() => setRole('student')}
+                                id="role-student"
+                            >
+                                <span className="role-icon">🎓</span>
+                                <span className="role-name">Student</span>
+                                <span className="role-desc">Personal view</span>
+                            </div>
+                        </div>
+
+                        {role === 'admin' && (
+                            <div className="auth-field">
+                                <label>Admin Authorization Code</label>
+                                <Input
+                                    prefix={<SafetyOutlined className="field-icon" />}
+                                    type="password"
+                                    placeholder="Enter admin secret code"
+                                    value={adminCode}
+                                    onChange={(e) => setAdminCode(e.target.value)}
+                                    size="large"
+                                    className="auth-input"
+                                    id="register-admin-code"
+                                />
+                            </div>
+                        )}
+
                         <div className="auth-field">
-                            <label>Admin Authorization Code</label>
+                            <label>Username</label>
                             <Input
-                                prefix={<SafetyOutlined className="field-icon" />}
-                                type="password"
-                                placeholder="Enter admin secret code"
-                                value={adminCode}
-                                onChange={(e) => setAdminCode(e.target.value)}
+                                prefix={<UserOutlined className="field-icon" />}
+                                placeholder="Choose a username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                                 size="large"
                                 className="auth-input"
-                                id="register-admin-code"
+                                id="register-username"
                             />
                         </div>
-                    )}
 
-                    <div className="auth-field">
-                        <label>Username</label>
-                        <Input
-                            prefix={<UserOutlined className="field-icon" />}
-                            placeholder="Choose a username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            size="large"
-                            className="auth-input"
-                            id="register-username"
-                        />
-                    </div>
-
-                    <div className="auth-field">
-                        <label>Email</label>
-                        <Input
-                            prefix={<MailOutlined className="field-icon" />}
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={(e) => {
-                                setEmail(e.target.value);
-                                if (emailError) setEmailError('');
-                            }}
-                            onBlur={() => {
-                                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                                if (email && !emailRegex.test(email.trim())) {
-                                    setEmailError('Please enter a valid email address.');
-                                }
-                            }}
-                            status={emailError ? 'error' : ''}
-                            size="large"
-                            className="auth-input"
-                            id="register-email"
-                        />
-                        {emailError && <div style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px' }}>{emailError}</div>}
-                    </div>
-
-                    <div className="auth-field">
-                        <label>Password</label>
-                        <Input
-                            prefix={<LockOutlined className="field-icon" />}
-                            suffix={
-                                <span className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
-                                    {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-                                </span>
-                            }
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="Min. 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char"
-                            value={password}
-                            onChange={(e) => {
-                                setPassword(e.target.value);
-                                if (passwordError) setPasswordError('');
-                            }}
-                            onBlur={() => {
-                                const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-                                if (password && !passwordRegex.test(password)) {
-                                    setPasswordError('Must be at least 8 chars, with 1 uppercase, 1 lowercase, 1 number, and 1 special character.');
-                                }
-                            }}
-                            status={passwordError ? 'error' : ''}
-                            size="large"
-                            className="auth-input"
-                            id="register-password"
-                        />
-                        {passwordError && <div style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', lineHeight: '1.2' }}>{passwordError}</div>}
-                    </div>
-
-                    {role === 'student' && (
-                        <div className="student-select">
-                            <label>Link Student ID</label>
-                            <Select
-                                placeholder="Select your student ID"
-                                value={studentId || undefined}
-                                onChange={setStudentId}
+                        <div className="auth-field">
+                            <label>Email</label>
+                            <Input
+                                prefix={<MailOutlined className="field-icon" />}
+                                placeholder="Enter your email"
+                                value={email}
+                                onChange={(e) => {
+                                    setEmail(e.target.value);
+                                    if (emailError) setEmailError('');
+                                }}
+                                onBlur={() => {
+                                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                    if (email && !emailRegex.test(email.trim())) {
+                                        setEmailError('Please enter a valid email address.');
+                                    }
+                                }}
+                                status={emailError ? 'error' : ''}
                                 size="large"
-                                style={{ width: '100%' }}
-                                showSearch
-                                optionFilterProp="children"
-                                id="register-student-id"
-                            >
-                                {students.map(s => (
-                                    <Option key={s.student_id} value={s.student_id}>
-                                        {s.student_id} — {s.name}
-                                    </Option>
-                                ))}
-                            </Select>
+                                className="auth-input"
+                                id="register-email"
+                            />
+                            {emailError && <div style={{ color: '#DC2626', fontSize: '12px', marginTop: '6px' }}>{emailError}</div>}
                         </div>
-                    )}
 
-                    <Button
-                        type="primary"
-                        size="large"
-                        onClick={handleRegister}
-                        loading={loading}
-                        block
-                        className="auth-submit-btn"
-                        id="register-submit"
-                    >
-                        {loading ? 'Creating Account...' : 'Create Account'}
-                    </Button>
+                        <div className="auth-field">
+                            <label>Password</label>
+                            <Input
+                                prefix={<LockOutlined className="field-icon" />}
+                                suffix={
+                                    <span className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
+                                        {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                                    </span>
+                                }
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Min. 8 chars, uppercase, lowercase, number, special"
+                                value={password}
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    if (passwordError) setPasswordError('');
+                                }}
+                                onBlur={() => {
+                                    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+                                    if (password && !passwordRegex.test(password)) {
+                                        setPasswordError('Must be 8+ chars with uppercase, lowercase, number, and special character.');
+                                    }
+                                }}
+                                status={passwordError ? 'error' : ''}
+                                size="large"
+                                className="auth-input"
+                                id="register-password"
+                            />
+                            {passwordError && <div style={{ color: '#DC2626', fontSize: '12px', marginTop: '6px', lineHeight: '1.3' }}>{passwordError}</div>}
+                        </div>
 
-                    <div className="auth-footer">
-                        <span>Already have an account? </span>
-                        <Link to="/login" className="auth-link">Sign in</Link>
+                        {role === 'student' && (
+                            <div className="student-select">
+                                <label>Link Student ID</label>
+                                <Select
+                                    placeholder="Select your student ID"
+                                    value={studentId || undefined}
+                                    onChange={setStudentId}
+                                    size="large"
+                                    style={{ width: '100%' }}
+                                    showSearch
+                                    optionFilterProp="children"
+                                    id="register-student-id"
+                                >
+                                    {students.map(s => (
+                                        <Option key={s.student_id} value={s.student_id}>
+                                            {s.student_id} — {s.name}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </div>
+                        )}
+
+                        <Button
+                            type="primary"
+                            size="large"
+                            onClick={handleRegister}
+                            loading={loading}
+                            block
+                            className="auth-submit-btn"
+                            id="register-submit"
+                        >
+                            {loading ? 'Creating Account...' : 'Create Account'}
+                        </Button>
+
+                        <div className="auth-footer">
+                            <span>Already have an account? </span>
+                            <Link to="/login" className="auth-link">Sign in</Link>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         </div>
     );
 };
