@@ -85,7 +85,7 @@ const Home = () => {
                     </div>
                 </div>
                 <div className="hero-glow" />
-            </div>
+            </section>
 
             {/* Quick Stats */}
             <div className="stats-strip animate-fade-in-up delay-1">
