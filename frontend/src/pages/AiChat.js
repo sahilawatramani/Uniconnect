@@ -1,26 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Input, Button, Card, Spin, Typography, message } from 'antd';
-import { SendOutlined, RobotOutlined, UserOutlined, DatabaseOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { Input, Button, Spin, Typography, message } from 'antd';
+import { SendOutlined, RobotOutlined, UserOutlined, DatabaseOutlined } from '@ant-design/icons';
+import { useAuth } from '../context/AuthContext';
 import './AiChat.css';
 
 const { Text, Paragraph } = Typography;
 
-const API_URL = process.env.REACT_APP_API_URL;
-
 const AiChat = () => {
+    const { authAxios, isStudent, user } = useAuth();
+    const API_URL = process.env.REACT_APP_API_URL;
+
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: '👋 Hi! I\'m your **UniConnect AI Assistant**. Ask me anything about your database!\n\nTry questions like:\n- "Show all students"\n- "Which course has the highest enrollment?"\n- "List students with attendance below 75%"\n- "How many departments are there?"',
+            content: isStudent
+                ? `👋 Hi ${user?.username || ''}! I'm your **UniConnect AI Assistant**. Ask me questions about your academic data!\n\nTry:\n- "Show my attendance"\n- "What courses am I enrolled in?"\n- "What's my attendance percentage?"`
+                : '👋 Hi! I\'m your **UniConnect AI Assistant**. Ask me anything about the database!\n\nTry:\n- "Show all students"\n- "Which course has the highest enrollment?"\n- "List students with attendance below 75%"',
             timestamp: new Date()
         }
     ]);
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef(null);
-    const navigate = useNavigate();
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -33,163 +34,112 @@ const AiChat = () => {
     const handleSend = async () => {
         if (!inputValue.trim() || loading) return;
 
-        const userMessage = {
-            role: 'user',
-            content: inputValue.trim(),
-            timestamp: new Date()
-        };
-
+        const userMessage = { role: 'user', content: inputValue.trim(), timestamp: new Date() };
         setMessages(prev => [...prev, userMessage]);
         setInputValue('');
         setLoading(true);
 
         try {
-            const response = await axios.post(`${API_URL}/api/ai/query`, {
+            const response = await authAxios.post(`${API_URL}/api/ai/query`, {
                 question: userMessage.content
             });
 
-            const assistantMessage = {
+            setMessages(prev => [...prev, {
                 role: 'assistant',
                 content: response.data.answer,
                 sql: response.data.sql,
                 data: response.data.data,
                 totalRows: response.data.total_rows,
                 timestamp: new Date()
-            };
-
-            setMessages(prev => [...prev, assistantMessage]);
+            }]);
         } catch (error) {
-            const errorMessage = {
+            setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: `❌ Sorry, I encountered an error: ${error.response?.data?.error || error.message}. Please try rephrasing your question.`,
+                content: `❌ ${error.response?.data?.error || error.message}`,
                 timestamp: new Date()
-            };
-            setMessages(prev => [...prev, errorMessage]);
+            }]);
             message.error('Failed to process query');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-        }
-    };
-
-
-
     const formatContent = (content) => {
-        // Simple markdown-like formatting
         return content.split('\n').map((line, i) => {
-            if (line.startsWith('- ') || line.startsWith('* ')) {
-                return <li key={i}>{line.substring(2)}</li>;
-            }
-            if (line.match(/^\d+\./)) {
-                return <li key={i}>{line.replace(/^\d+\.\s*/, '')}</li>;
-            }
-            if (line.startsWith('**') && line.endsWith('**')) {
-                return <Text key={i} strong style={{ display: 'block' }}>{line.replace(/\*\*/g, '')}</Text>;
-            }
-            return <Paragraph key={i} style={{ marginBottom: 4 }}>{line}</Paragraph>;
+            if (line.startsWith('- ') || line.startsWith('* ')) return <li key={i}>{line.substring(2)}</li>;
+            if (line.match(/^\d+\./)) return <li key={i}>{line.replace(/^\d+\.\s*/, '')}</li>;
+            if (line.startsWith('**') && line.endsWith('**'))
+                return <Text key={i} strong style={{ display: 'block', color: 'inherit' }}>{line.replace(/\*\*/g, '')}</Text>;
+            return <Paragraph key={i} style={{ marginBottom: 4, color: 'inherit' }}>{line}</Paragraph>;
         });
     };
 
-    const suggestedQueries = [
-        "Show all students",
-        "Which course has highest enrollment?",
-        "List departments with student count",
-        "Students with attendance below 75%"
-    ];
+    const suggestedQueries = isStudent
+        ? ["Show my attendance", "My enrolled courses", "My grades", "My attendance percentage"]
+        : ["Show all students", "Highest enrollment course?", "Departments with student count", "Low attendance students"];
 
     return (
-        <div className="ai-chat-container">
+        <div className="aichat-page">
             {/* Header */}
-            <div className="ai-chat-header">
-                <Button
-                    icon={<ArrowLeftOutlined />}
-                    onClick={() => navigate('/')}
-                    className="back-btn"
-                    type="text"
-                >
-                    Dashboard
-                </Button>
-                <div className="ai-chat-header-title">
-                    <DatabaseOutlined className="header-icon" />
-                    <div>
-                        <h2>AI Database Assistant</h2>
-                        <span className="header-subtitle">Query your database using natural language</span>
-                    </div>
+            <div className="aichat-header">
+                <div className="aichat-header-icon"><DatabaseOutlined /></div>
+                <div>
+                    <h1>AI Database Assistant</h1>
+                    <p>Query your database using natural language</p>
                 </div>
             </div>
 
-            {/* Messages Area */}
-            <div className="ai-chat-messages">
+            {/* Messages */}
+            <div className="aichat-messages">
                 {messages.map((msg, index) => (
-                    <div key={index} className={`chat-message ${msg.role}`}>
-                        <div className="message-avatar">
+                    <div key={index} className={`msg-row ${msg.role}`}>
+                        <div className="msg-avatar">
                             {msg.role === 'user' ? <UserOutlined /> : <RobotOutlined />}
                         </div>
-                        <div className="message-content">
-                            <Card
-                                className={`message-card ${msg.role}`}
-                                bordered={false}
-                                size="small"
-                            >
-                                <div className="message-text">
-                                    {formatContent(msg.content)}
-                                </div>
-
-                                {/* Data Table was removed to only show answer */}
-                            </Card>
-                            <Text className="message-time" type="secondary">
-                                {msg.timestamp.toLocaleTimeString()}
-                            </Text>
+                        <div className="msg-content">
+                            <div className={`msg-bubble ${msg.role}`}>
+                                {formatContent(msg.content)}
+                            </div>
+                            <span className="msg-time">
+                                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
                         </div>
                     </div>
                 ))}
 
                 {loading && (
-                    <div className="chat-message assistant">
-                        <div className="message-avatar"><RobotOutlined /></div>
-                        <div className="message-content">
-                            <Card className="message-card assistant" bordered={false} size="small">
-                                <Spin size="small" /> <Text type="secondary">Analyzing your query...</Text>
-                            </Card>
+                    <div className="msg-row assistant">
+                        <div className="msg-avatar"><RobotOutlined /></div>
+                        <div className="msg-content">
+                            <div className="msg-bubble assistant">
+                                <Spin size="small" /> <Text style={{ color: 'var(--text-muted)' }}>Analyzing your query...</Text>
+                            </div>
                         </div>
                     </div>
                 )}
-
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Suggested Queries */}
+            {/* Suggestions */}
             {messages.length <= 1 && (
-                <div className="suggested-queries">
+                <div className="aichat-suggestions">
                     {suggestedQueries.map((query, i) => (
-                        <Button
-                            key={i}
-                            className="suggested-btn"
-                            onClick={() => {
-                                setInputValue(query);
-                            }}
-                        >
+                        <button key={i} className="suggest-chip" onClick={() => setInputValue(query)}>
                             {query}
-                        </Button>
+                        </button>
                     ))}
                 </div>
             )}
 
-            {/* Input Area */}
-            <div className="ai-chat-input">
+            {/* Input */}
+            <div className="aichat-input">
                 <Input.TextArea
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyPress={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                     placeholder="Ask a question about your database..."
                     autoSize={{ minRows: 1, maxRows: 3 }}
-                    className="chat-input-field"
+                    className="aichat-input-field"
                     disabled={loading}
                 />
                 <Button
@@ -197,7 +147,7 @@ const AiChat = () => {
                     icon={<SendOutlined />}
                     onClick={handleSend}
                     loading={loading}
-                    className="send-btn"
+                    className="aichat-send-btn"
                     disabled={!inputValue.trim()}
                 >
                     Send

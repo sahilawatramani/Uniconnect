@@ -1,12 +1,11 @@
 """
 Feature 2 — Academic Learning Assistant (RAG-based)
 Upload PDFs, chunk & embed them, then answer questions using retrieved context.
+Documents are session-scoped: they live in memory only and reset on server restart.
 """
 
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from pydantic import BaseModel
-import os
-import json
 import numpy as np
 import faiss
 from PyPDF2 import PdfReader
@@ -18,12 +17,7 @@ router = APIRouter()
 # Initialize embedding model (lightweight, fast)
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
-# Storage paths
-VECTOR_STORE_DIR = os.path.join(os.path.dirname(__file__), '..', 'vector_store')
-FAISS_INDEX_PATH = os.path.join(VECTOR_STORE_DIR, 'index.faiss')
-CHUNKS_PATH = os.path.join(VECTOR_STORE_DIR, 'chunks.json')
-
-# In-memory stores
+# In-memory stores (no disk persistence — reset on server restart)
 faiss_index = None
 text_chunks = []
 document_names = []
@@ -31,32 +25,6 @@ document_names = []
 
 class AskRequest(BaseModel):
     question: str
-
-
-def ensure_vector_store_dir():
-    """Create vector store directory if it doesn't exist."""
-    os.makedirs(VECTOR_STORE_DIR, exist_ok=True)
-
-
-def load_existing_index():
-    """Load existing FAISS index and chunks from disk."""
-    global faiss_index, text_chunks, document_names
-    
-    if os.path.exists(FAISS_INDEX_PATH) and os.path.exists(CHUNKS_PATH):
-        faiss_index = faiss.read_index(FAISS_INDEX_PATH)
-        with open(CHUNKS_PATH, 'r', encoding='utf-8') as f:
-            stored = json.load(f)
-            text_chunks = stored.get('chunks', [])
-            document_names = stored.get('documents', [])
-
-
-def save_index():
-    """Save FAISS index and chunks to disk."""
-    ensure_vector_store_dir()
-    if faiss_index is not None:
-        faiss.write_index(faiss_index, FAISS_INDEX_PATH)
-        with open(CHUNKS_PATH, 'w', encoding='utf-8') as f:
-            json.dump({'chunks': text_chunks, 'documents': document_names}, f)
 
 
 def chunk_text(text: str, chunk_size: int = 300, overlap: int = 30) -> list:
@@ -70,8 +38,17 @@ def chunk_text(text: str, chunk_size: int = 300, overlap: int = 30) -> list:
     return chunks
 
 
-# Load existing index on startup
-load_existing_index()
+def rebuild_index_from_chunks():
+    """Rebuild FAISS index from the current text_chunks list."""
+    global faiss_index
+    if len(text_chunks) == 0:
+        faiss_index = None
+        return
+    embeddings = embedding_model.encode(text_chunks, show_progress_bar=False)
+    embeddings = np.array(embeddings).astype('float32')
+    dimension = embeddings.shape[1]
+    faiss_index = faiss.IndexFlatL2(dimension)
+    faiss_index.add(embeddings)
 
 
 @router.post("/upload")
@@ -112,9 +89,6 @@ async def upload_document(file: UploadFile = File(...)):
         faiss_index.add(embeddings)
         text_chunks.extend(new_chunks)
         document_names.extend([file.filename] * len(new_chunks))
-        
-        # Save to disk
-        save_index()
         
         return {
             "message": f"Document '{file.filename}' uploaded successfully!",
@@ -198,4 +172,49 @@ async def list_documents():
         "documents": unique_docs,
         "total_chunks": len(text_chunks),
         "total_documents": len(unique_docs)
+    }
+
+
+@router.delete("/documents/{doc_name}")
+async def delete_document(doc_name: str):
+    """Remove a specific document and its chunks from the in-memory store."""
+    global faiss_index, text_chunks, document_names
+    
+    if doc_name not in document_names:
+        raise HTTPException(status_code=404, detail=f"Document '{doc_name}' not found.")
+    
+    # Filter out chunks belonging to this document
+    new_chunks = []
+    new_doc_names = []
+    for chunk, name in zip(text_chunks, document_names):
+        if name != doc_name:
+            new_chunks.append(chunk)
+            new_doc_names.append(name)
+    
+    text_chunks = new_chunks
+    document_names = new_doc_names
+    
+    # Rebuild FAISS index from remaining chunks
+    rebuild_index_from_chunks()
+    
+    return {
+        "message": f"Document '{doc_name}' removed successfully.",
+        "total_chunks": len(text_chunks),
+        "total_documents": len(set(document_names))
+    }
+
+
+@router.delete("/documents")
+async def clear_all_documents():
+    """Clear all documents and reset the in-memory store."""
+    global faiss_index, text_chunks, document_names
+    
+    faiss_index = None
+    text_chunks = []
+    document_names = []
+    
+    return {
+        "message": "All documents cleared.",
+        "total_chunks": 0,
+        "total_documents": 0
     }

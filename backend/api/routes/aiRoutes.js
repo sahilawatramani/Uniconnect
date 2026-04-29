@@ -23,7 +23,13 @@ const upload = multer({
 // POST /api/ai/query — Natural language database query
 router.post('/query', async (req, res) => {
     try {
-        const response = await axios.post(`${AI_SERVICE_URL}/ai/query`, req.body, {
+        // Forward user context if available (for RBAC)
+        const payload = { ...req.body };
+        if (req.user) {
+            payload.role = req.user.role;
+            payload.student_id = req.user.student_id;
+        }
+        const response = await axios.post(`${AI_SERVICE_URL}/ai/query`, payload, {
             timeout: 120000
         });
         res.json(response.data);
@@ -92,6 +98,37 @@ router.get('/documents', async (req, res) => {
     }
 });
 
+// DELETE /api/ai/documents/:name — Remove a specific document
+router.delete('/documents/:name', async (req, res) => {
+    try {
+        const response = await axios.delete(
+            `${AI_SERVICE_URL}/ai/documents/${encodeURIComponent(req.params.name)}`,
+            { timeout: 10000 }
+        );
+        res.json(response.data);
+    } catch (error) {
+        console.error('AI Delete Doc Error:', error.response?.data || error.message);
+        res.status(error.response?.status || 500).json({
+            error: error.response?.data?.detail || 'Failed to delete document'
+        });
+    }
+});
+
+// DELETE /api/ai/documents — Clear all documents
+router.delete('/documents', async (req, res) => {
+    try {
+        const response = await axios.delete(`${AI_SERVICE_URL}/ai/documents`, {
+            timeout: 10000
+        });
+        res.json(response.data);
+    } catch (error) {
+        console.error('AI Clear Docs Error:', error.response?.data || error.message);
+        res.status(error.response?.status || 500).json({
+            error: error.response?.data?.detail || 'Failed to clear documents'
+        });
+    }
+});
+
 // POST /api/ai/quiz — Generate quiz questions
 router.post('/quiz', async (req, res) => {
     try {
@@ -110,7 +147,13 @@ router.post('/quiz', async (req, res) => {
 // POST /api/ai/insights — Get smart insights
 router.post('/insights', async (req, res) => {
     try {
-        const response = await axios.post(`${AI_SERVICE_URL}/ai/insights`, req.body, {
+        // Forward user context if available (for RBAC)
+        const payload = { ...req.body };
+        if (req.user) {
+            payload.role = req.user.role;
+            payload.student_id = req.user.student_id;
+        }
+        const response = await axios.post(`${AI_SERVICE_URL}/ai/insights`, payload, {
             timeout: 120000
         });
         res.json(response.data);

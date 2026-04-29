@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../config');
+const { requireAdmin } = require('../middleware/authMiddleware');
 
 // Get all departments
 router.get('/', async (req, res) => {
@@ -28,8 +29,8 @@ router.get('/:department_id', async (req, res) => {
     }
 });
 
-// Add a new department
-router.post('/', async (req, res) => {
+// Add a new department (admin only)
+router.post('/', requireAdmin, async (req, res) => {
     try {
         const { department_name, head_of_department } = req.body;
         const result = await db.query(
@@ -47,8 +48,8 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Update a department
-router.put('/:department_id', async (req, res) => {
+// Update a department (admin only)
+router.put('/:department_id', requireAdmin, async (req, res) => {
     try {
         const { department_id } = req.params;
         const { department_name, head_of_department } = req.body;
@@ -69,8 +70,8 @@ router.put('/:department_id', async (req, res) => {
     }
 });
 
-// Delete a department
-router.delete('/:department_id', async (req, res) => {
+// Delete a department (admin only)
+router.delete('/:department_id', requireAdmin, async (req, res) => {
     try {
         const { department_id } = req.params;
         const result = await db.query('DELETE FROM departments WHERE department_id = $1', [department_id]);

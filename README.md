@@ -51,6 +51,19 @@ UniConnect is a modern, full-stack student management system designed to streaml
 - ✅ **Attendance Monitoring** - Real-time attendance management
 - ✅ **Alumni Network** - Graduate tracking and engagement
 
+### 🔐 Security & Access Control (RBAC)
+UniConnect implements strict Role-Based Access Control to partition administrative features from student data. 
+- **Students**: Only have access to their own personal data, attendance stats, and AI learning tools.
+- **Administrators**: Have full access to manage the campus database.
+
+> [!IMPORTANT]
+> **Admin Secret Code**
+> To register as an Administrator, you must provide the Admin Authorization Code on the registration page to prevent privilege escalation. 
+> 
+> Default Code: `UNICONNECT2026`
+> 
+> *(This can be changed by setting the `ADMIN_SECRET` variable in your backend `.env` file).*
+
 ---
 
 ## 🛠️ Technology Stack

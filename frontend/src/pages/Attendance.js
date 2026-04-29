@@ -1,228 +1,226 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, DatePicker, Select, notification } from 'antd';
-import axios from 'axios';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Table, Button, Modal, Form, Input, DatePicker, Select, message, Card, Tag, Progress, Row, Col } from 'antd';
+import { CheckCircleOutlined, PlusOutlined, BookOutlined, FilterOutlined } from '@ant-design/icons';
+import { useAuth } from '../context/AuthContext';
 import moment from 'moment';
+import './CrudPage.css';
+import './Attendance.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+const { Option } = Select;
+const API_URL = process.env.REACT_APP_API_URL;
 
 const Attendance = () => {
     const [attendance, setAttendance] = useState([]);
+    const [summary, setSummary] = useState([]);
+    const [semesters, setSemesters] = useState([]);
+    const [selectedSemester, setSelectedSemester] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingAttendance, setEditingAttendance] = useState(null);
-    const [students, setStudents] = useState([]);
-    const [courses, setCourses] = useState([]);
+    const [editingRecord, setEditingRecord] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [form] = Form.useForm();
+    const { authAxios, isAdmin } = useAuth();
 
     useEffect(() => {
         fetchAttendance();
-        fetchStudents();
-        fetchCourses();
-    }, []);
+        if (!isAdmin) fetchSummary();
+    }, [selectedSemester]); // eslint-disable-line
 
     const fetchAttendance = async () => {
+        setLoading(true);
         try {
-            const { data } = await axios.get(`${API_URL}/api/attendance`);
-            console.log("Fetched attendance:", data);
-            setAttendance(data);
-        } catch (error) {
-            notification.error({
-                message: 'Failed to fetch attendance',
-                description: error?.response?.data?.message || error.message,
-            });
+            const params = selectedSemester ? `?semester=${encodeURIComponent(selectedSemester)}` : '';
+            const res = await authAxios.get(`${API_URL}/api/attendance${params}`);
+            setAttendance(res.data);
+        } catch { message.error('Failed to fetch attendance'); }
+        finally { setLoading(false); }
+    };
+
+    const fetchSummary = async () => {
+        try {
+            const params = selectedSemester ? `?semester=${encodeURIComponent(selectedSemester)}` : '';
+            const res = await authAxios.get(`${API_URL}/api/attendance/summary${params}`);
+            setSummary(res.data.subjects || []);
+            if (!selectedSemester) setSemesters(res.data.semesters || []);
+        } catch (err) {
+            console.log('Summary not available');
         }
     };
 
-    const fetchStudents = async () => {
-        try {
-            const { data } = await axios.get(`${API_URL}/api/students`);
-            console.log("Fetched students:", data);
-            setStudents(data);
-        } catch (error) {
-            notification.error({
-                message: 'Failed to fetch students',
-                description: error?.response?.data?.message || error.message,
-            });
-        }
+    // Overall stats for student
+    const overallStats = useMemo(() => {
+        if (!summary.length) return null;
+        const total = summary.reduce((s, r) => s + parseInt(r.total_classes || 0), 0);
+        const present = summary.reduce((s, r) => s + parseInt(r.present || 0), 0);
+        const absent = summary.reduce((s, r) => s + parseInt(r.absent || 0), 0);
+        const late = summary.reduce((s, r) => s + parseInt(r.late || 0), 0);
+        const pct = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
+        return { total, present, absent, late, pct: parseFloat(pct) };
+    }, [summary]);
+
+    const getProgressColor = (pct) => {
+        if (pct >= 75) return '#10B981';
+        if (pct >= 60) return '#F59E0B';
+        return '#EF4444';
     };
 
-    const fetchCourses = async () => {
-        try {
-            const { data } = await axios.get(`${API_URL}/api/courses`);
-            console.log("Fetched courses:", data);
-            setCourses(data);
-        } catch (error) {
-            notification.error({
-                message: 'Failed to fetch courses',
-                description: error?.response?.data?.message || error.message,
-            });
-        }
-    };
+    const statusColors = { Present: 'green', Absent: 'red', Late: 'orange' };
+
+    const columns = [
+        { title: 'ID', dataIndex: 'attendance_id', key: 'id', width: 60 },
+        ...(isAdmin ? [
+            { title: 'Student ID', dataIndex: 'student_id', key: 'sid', width: 100 },
+            { title: 'Student', dataIndex: 'student_name', key: 'sname' },
+        ] : []),
+        { title: 'Course', dataIndex: 'course_name', key: 'cname' },
+        { title: 'Semester', dataIndex: 'semester', key: 'sem', width: 110 },
+        { title: 'Date', dataIndex: 'attendance_date', key: 'date', render: d => d ? moment(d).format('YYYY-MM-DD') : '—', width: 120 },
+        {
+            title: 'Status', dataIndex: 'status', key: 'status', width: 100,
+            render: s => <Tag color={statusColors[s] || 'default'}>{s}</Tag>
+        },
+        ...(isAdmin ? [{
+            title: 'Actions', key: 'actions', width: 160,
+            render: (_, r) => (<>
+                <Button className="action-btn edit-btn" onClick={() => handleEdit(r)}>Edit</Button>
+                <Button className="action-btn delete-btn" onClick={() => handleDelete(r.attendance_id)}>Delete</Button>
+            </>),
+        }] : []),
+    ];
 
     const handleAddEdit = async () => {
         try {
             const values = await form.validateFields();
-            values.attendance_date = values.attendance_date.format('YYYY-MM-DD');
-
-            if (editingAttendance) {
-                await axios.put(`${API_URL}/api/attendance/${editingAttendance.attendance_id}`, values);
-                setAttendance(attendance.map(att =>
-                    att.attendance_id === editingAttendance.attendance_id ? { ...att, ...values } : att
-                ));
-                notification.success({ message: 'Attendance updated successfully' });
+            if (values.attendance_date) values.attendance_date = values.attendance_date.format('YYYY-MM-DD');
+            if (editingRecord) {
+                await authAxios.put(`${API_URL}/api/attendance/${editingRecord.attendance_id}`, values);
+                message.success('Attendance updated');
             } else {
-                const { data } = await axios.post(`${API_URL}/api/attendance`, values);
-                setAttendance([...attendance, { ...values, attendance_id: data.attendanceId }]);
-                notification.success({ message: 'Attendance added successfully' });
+                await authAxios.post(`${API_URL}/api/attendance`, values);
+                message.success('Attendance added');
             }
-
-            toggleModal(false);
-        } catch (error) {
-            notification.error({
-                message: 'Failed to save attendance',
-                description: error?.response?.data?.message || error.message,
-            });
-        }
+            setIsModalOpen(false); form.resetFields(); setEditingRecord(null); fetchAttendance();
+        } catch (err) { message.error(err.response?.data?.error || 'Failed to save attendance'); }
     };
 
     const handleEdit = (record) => {
         form.setFieldsValue({
             ...record,
-            attendance_date: moment(record.attendance_date),
+            attendance_date: record.attendance_date ? moment(record.attendance_date) : null
         });
-        setEditingAttendance(record);
-        setIsModalOpen(true);
+        setEditingRecord(record); setIsModalOpen(true);
     };
 
-    const handleDelete = async (attendance_id) => {
-        try {
-            await axios.delete(`${API_URL}/api/attendance/${attendance_id}`);
-            setAttendance(attendance.filter(att => att.attendance_id !== attendance_id));
-            notification.success({ message: 'Attendance deleted successfully' });
-        } catch (error) {
-            notification.error({
-                message: 'Failed to delete attendance',
-                description: error?.response?.data?.message || error.message,
-            });
-        }
+    const handleDelete = async (id) => {
+        try { await authAxios.delete(`${API_URL}/api/attendance/${id}`); message.success('Record deleted'); fetchAttendance(); }
+        catch { message.error('Failed to delete record'); }
     };
-
-    const toggleModal = (visible) => {
-        setIsModalOpen(visible);
-        if (!visible) {
-            form.resetFields();
-            setEditingAttendance(null);
-        }
-    };
-
-    const columns = [
-        { title: 'Attendance ID', dataIndex: 'attendance_id', key: 'attendance_id' },
-        {
-    title: 'Student',
-    key: 'student_name',
-    render: (_, record) => {
-        const student = students.find(s => s.student_id === record.student_id);
-        return student ? student.name : record.student_id;
-    }
-},
-
-        {
-            title: 'Course',
-            key: 'course_name',
-            render: (_, record) => {
-                const course = courses.find(c => c.course_id === record.course_id);
-                return course ? course.course_name : record.course_id;
-            }
-        },
-        {
-            title: 'Date',
-            dataIndex: 'attendance_date',
-            key: 'attendance_date',
-            render: date => moment(date).format('YYYY-MM-DD'),
-        },
-        { title: 'Status', dataIndex: 'status', key: 'status' },
-        {
-            title: 'Actions',
-            key: 'actions',
-            render: (_, record) => (
-                <>
-                    <Button onClick={() => handleEdit(record)} style={{ marginRight: 8 }}>Edit</Button>
-                    <Button onClick={() => handleDelete(record.attendance_id)} danger>Delete</Button>
-                </>
-            ),
-        },
-    ];
 
     return (
-        <div>
-            <h1>Attendance Management</h1>
-            <Button type="primary" onClick={() => toggleModal(true)}>
-                Add Attendance
-            </Button>
-
-            <Table
-                columns={columns}
-                dataSource={attendance}
-                rowKey="attendance_id"
-                style={{ marginTop: 16 }}
-            />
-
-            <Modal
-                title={editingAttendance ? "Edit Attendance" : "Add Attendance"}
-                open={isModalOpen}
-                onCancel={() => toggleModal(false)}
-                onOk={handleAddEdit}
-                okText={editingAttendance ? "Update" : "Add"}
-            >
-                <Form form={form} layout="vertical">
-                    <Form.Item
-                        name="student_id"
-                        label="Student"
-                        rules={[{ required: true, message: "Please select a student" }]}
-                    >
-                        <Select placeholder="Select a student" disabled={!!editingAttendance}>
-                            {students.map((s) => (
-                                <Select.Option key={s.student_id} value={s.student_id}>
-                                    {s.student_id} - {(s.first_name || '') + ' ' + (s.last_name || '')}
-                                </Select.Option>
-                            ))}
+        <div className="crud-page">
+            <div className="crud-header">
+                <div className="crud-header-left">
+                    <div className="crud-header-icon" style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}><CheckCircleOutlined /></div>
+                    <div><h1>Attendance</h1><p>{isAdmin ? 'Track all attendance records' : 'Your attendance records'}</p></div>
+                </div>
+                <div className="crud-header-right">
+                    {!isAdmin && semesters.length > 0 && (
+                        <Select
+                            placeholder="All Semesters"
+                            allowClear
+                            value={selectedSemester}
+                            onChange={(val) => setSelectedSemester(val || null)}
+                            style={{ width: 200 }}
+                            suffixIcon={<FilterOutlined />}
+                            className="semester-filter"
+                        >
+                            {semesters.map(s => <Option key={s} value={s}>{s}</Option>)}
                         </Select>
-                    </Form.Item>
+                    )}
+                    {isAdmin && <Button type="primary" icon={<PlusOutlined />} className="add-btn" onClick={() => { setIsModalOpen(true); setEditingRecord(null); }}>Add Record</Button>}
+                </div>
+            </div>
 
-                    <Form.Item
-                        name="course_id"
-                        label="Course"
-                        rules={[{ required: true, message: "Please select a course" }]}
-                    >
-                        <Select placeholder="Select a course" disabled={!!editingAttendance}>
-                            {courses.map((c) => (
-                                <Select.Option key={c.course_id} value={c.course_id}>
-                                    {c.course_id} - {c.course_name}
-                                </Select.Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
+            {/* Student: Subject-wise Summary Cards */}
+            {!isAdmin && summary.length > 0 && (
+                <div className="crud-body" style={{ paddingBottom: 0 }}>
+                    {/* Overall Stats Bar */}
+                    {overallStats && (
+                        <Card className="overall-stats-card">
+                            <Row gutter={24} align="middle">
+                                <Col flex="auto">
+                                    <div className="overall-label">Overall Attendance</div>
+                                    <Progress
+                                        percent={overallStats.pct}
+                                        strokeColor={getProgressColor(overallStats.pct)}
+                                        trailColor="rgba(255,255,255,0.08)"
+                                        size="small"
+                                    />
+                                </Col>
+                                <Col><div className="stat-pill present">{overallStats.present} <span>Present</span></div></Col>
+                                <Col><div className="stat-pill absent">{overallStats.absent} <span>Absent</span></div></Col>
+                                <Col><div className="stat-pill late">{overallStats.late} <span>Late</span></div></Col>
+                                <Col><div className="stat-pill total">{overallStats.total} <span>Total</span></div></Col>
+                            </Row>
+                        </Card>
+                    )}
 
-                    <Form.Item
-                        name="attendance_date"
-                        label="Date"
-                        rules={[{ required: true, message: "Please select the date" }]}
-                    >
-                        <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
-                    </Form.Item>
+                    {/* Per-Subject Cards */}
+                    <div className="subject-grid">
+                        {summary.map((sub, i) => {
+                            const pct = parseFloat(sub.percentage || 0);
+                            return (
+                                <Card key={sub.course_id || i} className="subject-card" hoverable>
+                                    <div className="subject-card-header">
+                                        <div className="subject-icon"><BookOutlined /></div>
+                                        <div className="subject-info">
+                                            <h4>{sub.course_name || sub.course_id}</h4>
+                                            <span className="subject-semester">{sub.semester || '—'}</span>
+                                        </div>
+                                    </div>
+                                    <Progress
+                                        percent={pct}
+                                        strokeColor={getProgressColor(pct)}
+                                        trailColor="rgba(255,255,255,0.08)"
+                                        format={p => <span style={{ color: getProgressColor(pct), fontWeight: 700 }}>{p}%</span>}
+                                    />
+                                    <div className="subject-stats">
+                                        <span className="s-present">✓ {sub.present}</span>
+                                        <span className="s-absent">✗ {sub.absent}</span>
+                                        <span className="s-late">⏱ {sub.late}</span>
+                                        <span className="s-total">/ {sub.total_classes}</span>
+                                    </div>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
-                    <Form.Item
-                        name="status"
-                        label="Status"
-                        rules={[{ required: true, message: "Please select attendance status" }]}
-                    >
-                        <Select placeholder="Select status">
-                            <Select.Option value="Present">Present</Select.Option>
-                            <Select.Option value="Absent">Absent</Select.Option>
-                            <Select.Option value="Late">Late</Select.Option>
-                        </Select>
-                    </Form.Item>
-                </Form>
-            </Modal>
+            <div className="crud-body">
+                <Card className="crud-table-card">
+                    <Table columns={columns} dataSource={attendance} rowKey="attendance_id" loading={loading} pagination={{ pageSize: 15 }} scroll={{ x: 800 }} />
+                </Card>
+            </div>
+
+            {isAdmin && (
+                <Modal title={editingRecord ? "Edit Attendance" : "Add Attendance"} open={isModalOpen}
+                    onCancel={() => { setIsModalOpen(false); form.resetFields(); setEditingRecord(null); }} onOk={handleAddEdit}>
+                    <Form form={form} layout="vertical">
+                        <Form.Item name="student_id" label="Student ID" rules={[{ required: true }]}><Input /></Form.Item>
+                        <Form.Item name="course_id" label="Course ID" rules={[{ required: true }]}><Input /></Form.Item>
+                        <Form.Item name="attendance_date" label="Date" rules={[{ required: true }]}>
+                            <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
+                        </Form.Item>
+                        <Form.Item name="status" label="Status" rules={[{ required: true }]}>
+                            <Select>
+                                <Option value="Present">Present</Option>
+                                <Option value="Absent">Absent</Option>
+                                <Option value="Late">Late</Option>
+                            </Select>
+                        </Form.Item>
+                    </Form>
+                </Modal>
+            )}
         </div>
     );
 };

@@ -2,11 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Input, Button, Spin, Typography } from 'antd';
 import { MessageOutlined, CloseOutlined, SendOutlined, RobotOutlined, ExpandOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import './ChatWidget.css';
 
 const { Text } = Typography;
-const API_URL = process.env.REACT_APP_API_URL;
 
 const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -17,10 +16,16 @@ const ChatWidget = () => {
     const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef(null);
     const navigate = useNavigate();
+    const { user, authAxios } = useAuth();
+
+    const API_URL = process.env.REACT_APP_API_URL;
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    // Don't render on auth pages
+    if (!user) return null;
 
     const handleSend = async () => {
         if (!input.trim() || loading) return;
@@ -31,7 +36,7 @@ const ChatWidget = () => {
         setLoading(true);
 
         try {
-            const response = await axios.post(`${API_URL}/api/ai/query`, { question: q });
+            const response = await authAxios.post(`${API_URL}/api/ai/query`, { question: q });
             setMessages(prev => [...prev, { role: 'assistant', content: response.data.answer }]);
         } catch (error) {
             setMessages(prev => [...prev, { role: 'assistant', content: '❌ Error. Try the full AI Chat for better results.' }]);

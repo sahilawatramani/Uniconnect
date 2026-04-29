@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../config'); // PostgreSQL pool
+const { requireAdmin } = require('../middleware/authMiddleware');
 
 // Get all courses
 router.get('/', async (req, res) => {
@@ -28,8 +29,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Create a new course
-router.post('/', async (req, res) => {
+// Create a new course (admin only)
+router.post('/', requireAdmin, async (req, res) => {
     const { course_id, course_name, credits, department_id, semester } = req.body;
 
     if (!course_id || !course_name || !credits || !department_id || !semester) {
@@ -50,8 +51,8 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Update a course
-router.put('/:id', async (req, res) => {
+// Update a course (admin only)
+router.put('/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { course_name, credits, department_id, semester } = req.body;
 
@@ -78,8 +79,8 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// Delete a course
-router.delete('/:id', async (req, res) => {
+// Delete a course (admin only)
+router.delete('/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
 
     try {

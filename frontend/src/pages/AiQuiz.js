@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Input, Button, Card, Radio, Select, InputNumber, Typography, Tag, Spin, Progress, message } from 'antd';
-import { TrophyOutlined, ArrowLeftOutlined, CheckCircleOutlined, CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { TrophyOutlined, CheckCircleOutlined, CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import { useAuth } from '../context/AuthContext';
 import './AiQuiz.css';
 
 const { Text, Title } = Typography;
 const { Option } = Select;
 
 const API_URL = process.env.REACT_APP_API_URL;
+
 
 const AiQuiz = () => {
     const [topic, setTopic] = useState('');
@@ -19,7 +19,7 @@ const AiQuiz = () => {
     const [answers, setAnswers] = useState({});
     const [submitted, setSubmitted] = useState(false);
     const [score, setScore] = useState(null);
-    const navigate = useNavigate();
+    const { authAxios } = useAuth();
 
     const handleGenerate = async () => {
         if (!topic.trim()) {
@@ -34,7 +34,7 @@ const AiQuiz = () => {
         setScore(null);
 
         try {
-            const response = await axios.post(`${API_URL}/api/ai/quiz`, {
+            const response = await authAxios.post(`${API_URL}/api/ai/quiz`, {
                 topic: topic.trim(),
                 difficulty,
                 num_questions: numQuestions
@@ -96,15 +96,10 @@ const AiQuiz = () => {
         <div className="ai-quiz-container">
             {/* Header */}
             <div className="ai-quiz-header">
-                <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} type="text" className="back-btn">
-                    Dashboard
-                </Button>
-                <div className="ai-quiz-header-title">
-                    <TrophyOutlined className="header-icon" />
-                    <div>
-                        <h2>AI Quiz Generator</h2>
-                        <span className="header-subtitle">Test your knowledge with AI-generated questions</span>
-                    </div>
+                <div className="quiz-header-icon"><TrophyOutlined /></div>
+                <div>
+                    <h1>AI Quiz Generator</h1>
+                    <p>Test your knowledge with AI-generated questions</p>
                 </div>
             </div>
 

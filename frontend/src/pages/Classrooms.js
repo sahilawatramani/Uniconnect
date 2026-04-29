@@ -1,146 +1,86 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, InputNumber, notification } from 'antd';
-import axios from 'axios';
+import { Table, Button, Modal, Form, Input, InputNumber, message, Card } from 'antd';
+import { HomeOutlined, PlusOutlined } from '@ant-design/icons';
+import { useAuth } from '../context/AuthContext';
+import './CrudPage.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+const API_URL = process.env.REACT_APP_API_URL;
 
 const Classrooms = () => {
     const [classrooms, setClassrooms] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isEditMode, setIsEditMode] = useState(false);
-    const [currentClassroom, setCurrentClassroom] = useState(null);
+    const [editingClassroom, setEditingClassroom] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [form] = Form.useForm();
+    const { authAxios } = useAuth();
 
-    useEffect(() => {
-        fetchClassrooms();
-    }, []);
+    useEffect(() => { fetchClassrooms(); }, []);
 
     const fetchClassrooms = async () => {
-        try {
-            const response = await axios.get(`${API_URL}/api/classrooms`);
-            setClassrooms(response.data);
-        } catch (error) {
-            notification.error({
-                message: 'Error fetching classrooms',
-                description: error?.response?.data?.message || error.message,
-            });
-        }
+        setLoading(true);
+        try { const res = await authAxios.get(`${API_URL}/api/classrooms`); setClassrooms(res.data); }
+        catch { message.error('Failed to fetch classrooms'); }
+        finally { setLoading(false); }
     };
 
-    const handleAdd = async () => {
+    const columns = [
+        { title: 'Classroom ID', dataIndex: 'classroom_id', key: 'id', width: 120 },
+        { title: 'Building', dataIndex: 'building', key: 'building' },
+        { title: 'Room Number', dataIndex: 'room_number', key: 'room' },
+        { title: 'Capacity', dataIndex: 'capacity', key: 'capacity', width: 100 },
+        {
+            title: 'Actions', key: 'actions', width: 160,
+            render: (_, r) => (<>
+                <Button className="action-btn edit-btn" onClick={() => handleEdit(r)}>Edit</Button>
+                <Button className="action-btn delete-btn" onClick={() => handleDelete(r.classroom_id)}>Delete</Button>
+            </>),
+        },
+    ];
+
+    const handleAddEdit = async () => {
         try {
             const values = await form.validateFields();
-            const response = await axios.post(`${API_URL}/api/classrooms`, {
-                room_number: values.room_number,
-                building: values.building,
-                capacity: values.capacity
-            });
-            setClassrooms([...classrooms, response.data]);
-            notification.success({ message: 'Classroom added successfully' });
-            closeModalAndReset();
-        } catch (error) {
-            notification.error({
-                message: 'Error adding classroom',
-                description: error?.response?.data?.message || error.message,
-            });
-        }
+            if (editingClassroom) {
+                await authAxios.put(`${API_URL}/api/classrooms/${editingClassroom.classroom_id}`, values);
+                message.success('Classroom updated');
+            } else {
+                await authAxios.post(`${API_URL}/api/classrooms`, values);
+                message.success('Classroom added');
+            }
+            setIsModalOpen(false); form.resetFields(); setEditingClassroom(null); fetchClassrooms();
+        } catch (err) { message.error(err.response?.data?.error || 'Failed to save classroom'); }
     };
 
-    const handleEdit = async () => {
-        try {
-            const values = await form.validateFields();
-            await axios.put(`${API_URL}/api/classrooms/${currentClassroom.classroom_id}`, {
-                room_number: values.room_number,
-                building: values.building,
-                capacity: values.capacity
-            });
-            const updatedList = classrooms.map((classroom) =>
-                classroom.classroom_id === currentClassroom.classroom_id
-                    ? { ...classroom, ...values }
-                    : classroom
-            );
-            setClassrooms(updatedList);
-            notification.success({ message: 'Classroom updated successfully' });
-            closeModalAndReset();
-        } catch (error) {
-            notification.error({
-                message: 'Error updating classroom',
-                description: error?.response?.data?.message || error.message,
-            });
-        }
+    const handleEdit = (room) => {
+        form.setFieldsValue(room); setEditingClassroom(room); setIsModalOpen(true);
     };
 
     const handleDelete = async (id) => {
-        try {
-            await axios.delete(`${API_URL}/api/classrooms/${id}`);
-            setClassrooms(classrooms.filter((c) => c.classroom_id !== id));
-            notification.success({ message: 'Classroom deleted successfully' });
-        } catch (error) {
-            notification.error({
-                message: 'Error deleting classroom',
-                description: error?.response?.data?.message || error.message,
-            });
-        }
-    };
-
-    const openEditModal = (classroom) => {
-        setIsEditMode(true);
-        setCurrentClassroom(classroom);
-        form.setFieldsValue({
-            room_number: classroom.room_number,
-            building: classroom.building,
-            capacity: classroom.capacity,
-        });
-        setIsModalOpen(true);
-    };
-
-    const closeModalAndReset = () => {
-        form.resetFields();
-        setIsEditMode(false);
-        setCurrentClassroom(null);
-        setIsModalOpen(false);
+        try { await authAxios.delete(`${API_URL}/api/classrooms/${id}`); message.success('Classroom deleted'); fetchClassrooms(); }
+        catch { message.error('Failed to delete classroom'); }
     };
 
     return (
-        <div>
-            <h1>Classroom Management</h1>
-            <Button type="primary" onClick={() => setIsModalOpen(true)}>Add Classroom</Button>
-            <Table
-                columns={[
-                    { title: 'Classroom ID', dataIndex: 'classroom_id', key: 'classroom_id' },
-                    { title: 'Room Number', dataIndex: 'room_number', key: 'room_number' },
-                    { title: 'Building', dataIndex: 'building', key: 'building' },
-                    { title: 'Capacity', dataIndex: 'capacity', key: 'capacity' },
-                    {
-                        title: 'Actions',
-                        key: 'actions',
-                        render: (_, record) => (
-                            <>
-                                <Button onClick={() => openEditModal(record)} style={{ marginRight: 8 }}>Edit</Button>
-                                <Button onClick={() => handleDelete(record.classroom_id)} danger>Delete</Button>
-                            </>
-                        ),
-                    },
-                ]}
-                dataSource={classrooms}
-                rowKey="classroom_id"
-            />
-            <Modal
-                title={isEditMode ? "Edit Classroom" : "Add Classroom"}
-                open={isModalOpen}
-                onCancel={closeModalAndReset}
-                onOk={isEditMode ? handleEdit : handleAdd}
-            >
+        <div className="crud-page">
+            <div className="crud-header">
+                <div className="crud-header-left">
+                    <div className="crud-header-icon" style={{ background: 'linear-gradient(135deg, #EC4899, #DB2777)' }}><HomeOutlined /></div>
+                    <div><h1>Classrooms</h1><p>Manage room allocation</p></div>
+                </div>
+                <Button type="primary" icon={<PlusOutlined />} className="add-btn" onClick={() => { setIsModalOpen(true); setEditingClassroom(null); }}>Add Classroom</Button>
+            </div>
+            <div className="crud-body">
+                <Card className="crud-table-card">
+                    <Table columns={columns} dataSource={classrooms} rowKey="classroom_id" loading={loading} pagination={{ pageSize: 10 }} />
+                </Card>
+            </div>
+            <Modal title={editingClassroom ? "Edit Classroom" : "Add Classroom"} open={isModalOpen}
+                onCancel={() => { setIsModalOpen(false); form.resetFields(); setEditingClassroom(null); }} onOk={handleAddEdit}>
                 <Form form={form} layout="vertical">
-                    <Form.Item name="room_number" label="Room Number" rules={[{ required: true }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="building" label="Building" rules={[{ required: true }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="capacity" label="Capacity" rules={[{ required: true, type: 'number', min: 1 }]}>
-                        <InputNumber style={{ width: '100%' }} />
-                    </Form.Item>
+                    <Form.Item name="classroom_id" label="Classroom ID" rules={[{ required: true }]}><Input disabled={!!editingClassroom} /></Form.Item>
+                    <Form.Item name="building" label="Building" rules={[{ required: true }]}><Input /></Form.Item>
+                    <Form.Item name="room_number" label="Room Number" rules={[{ required: true }]}><Input /></Form.Item>
+                    <Form.Item name="capacity" label="Capacity" rules={[{ required: true }]}><InputNumber min={1} style={{ width: '100%' }} /></Form.Item>
                 </Form>
             </Modal>
         </div>

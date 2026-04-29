@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../config');
+const { requireAdmin } = require('../middleware/authMiddleware');
 
 // Get all alumni
 router.get('/', async (req, res) => {
@@ -26,8 +27,8 @@ router.get('/:alumni_id', async (req, res) => {
     }
 });
 
-// Add a new alumnus
-router.post('/', async (req, res) => {
+// Add a new alumnus (admin only)
+router.post('/', requireAdmin, async (req, res) => {
     const { student_id, graduation_year, current_job_title, company } = req.body;
 
     try {
@@ -50,8 +51,8 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Update an alumnus
-router.put('/:alumni_id', async (req, res) => {
+// Update an alumnus (admin only)
+router.put('/:alumni_id', requireAdmin, async (req, res) => {
     const { alumni_id } = req.params;
     const { student_id, graduation_year, current_job_title, company } = req.body;
 
@@ -74,8 +75,8 @@ router.put('/:alumni_id', async (req, res) => {
     }
 });
 
-// Delete an alumnus
-router.delete('/:alumni_id', async (req, res) => {
+// Delete an alumnus (admin only)
+router.delete('/:alumni_id', requireAdmin, async (req, res) => {
     const { alumni_id } = req.params;
 
     try {

@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Statistic, Spin, Typography, Button, Tag, message } from 'antd';
 import {
-    ArrowLeftOutlined, TeamOutlined, BookOutlined, ApartmentOutlined,
+    TeamOutlined, BookOutlined, ApartmentOutlined,
     UserOutlined, BarChartOutlined, AlertOutlined, RiseOutlined,
     ReloadOutlined
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import './AiInsights.css';
 
 const { Paragraph, Text, Title } = Typography;
@@ -17,7 +16,7 @@ const AiInsights = () => {
     const [loading, setLoading] = useState(true);
     const [insights, setInsights] = useState('');
     const [stats, setStats] = useState({});
-    const navigate = useNavigate();
+    const { authAxios } = useAuth();
 
     useEffect(() => {
         fetchInsights();
@@ -26,7 +25,7 @@ const AiInsights = () => {
     const fetchInsights = async () => {
         setLoading(true);
         try {
-            const response = await axios.post(`${API_URL}/api/ai/insights`, {});
+            const response = await authAxios.post(`${API_URL}/api/ai/insights`, {});
             setInsights(response.data.insights || '');
             setStats(response.data.stats || {});
         } catch (error) {
@@ -39,7 +38,7 @@ const AiInsights = () => {
     const formatInsights = (text) => {
         return text.split('\n').map((line, i) => {
             if (line.startsWith('## ') || line.startsWith('### ')) {
-                return <Title key={i} level={5} style={{ color: '#004643', marginTop: 16 }}>{line.replace(/^#+ /, '')}</Title>;
+                return <Title key={i} level={5} style={{ color: 'var(--accent-cyan)', marginTop: 16 }}>{line.replace(/^#+ /, '')}</Title>;
             }
             if (line.startsWith('- ') || line.startsWith('* ')) {
                 const content = line.substring(2);
@@ -75,19 +74,12 @@ const AiInsights = () => {
         return (
             <div className="ai-insights-container">
                 <div className="ai-insights-header">
-                    <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} type="text" className="back-btn">Dashboard</Button>
-                    <div className="ai-insights-header-title">
-                        <BarChartOutlined className="header-icon" />
-                        <div>
-                            <h2>Smart Insights</h2>
-                            <span className="header-subtitle">AI-powered analytics</span>
-                        </div>
-                    </div>
+                    <div className="insights-header-icon"><BarChartOutlined /></div>
+                    <div><h1>Smart Insights</h1><p>AI-powered analytics</p></div>
                 </div>
                 <div className="insights-loading">
                     <Spin size="large" />
-                    <Title level={4} style={{ color: '#004643', marginTop: 16 }}>Analyzing your data...</Title>
-                    <Text type="secondary">AI is reviewing institutional statistics</Text>
+                    <p>Analyzing your data...</p>
                 </div>
             </div>
         );
@@ -97,15 +89,9 @@ const AiInsights = () => {
         <div className="ai-insights-container">
             {/* Header */}
             <div className="ai-insights-header">
-                <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} type="text" className="back-btn">Dashboard</Button>
-                <div className="ai-insights-header-title">
-                    <BarChartOutlined className="header-icon" />
-                    <div>
-                        <h2>Smart Insights</h2>
-                        <span className="header-subtitle">AI-powered analytics & recommendations</span>
-                    </div>
-                </div>
-                <Button icon={<ReloadOutlined />} onClick={fetchInsights} className="refresh-btn">Refresh</Button>
+                <div className="insights-header-icon"><BarChartOutlined /></div>
+                <div><h1>Smart Insights</h1><p>AI-powered analytics & recommendations</p></div>
+                <Button icon={<ReloadOutlined />} onClick={fetchInsights} className="refresh-btn" style={{ marginLeft: 'auto' }}>Refresh</Button>
             </div>
 
             <div className="ai-insights-body">

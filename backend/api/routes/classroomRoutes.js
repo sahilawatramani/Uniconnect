@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../../config'); // PostgreSQL Pool from config.js
+const { requireAdmin } = require('../middleware/authMiddleware');
 
 // Get all classrooms
 router.get('/', async (req, res) => {
@@ -29,8 +30,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Create a new classroom
-router.post('/', async (req, res) => {
+// Create a new classroom (admin only)
+router.post('/', requireAdmin, async (req, res) => {
     const { classroom_id, building, room_number, capacity } = req.body;
 
     try {
@@ -52,8 +53,8 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Update a classroom
-router.put('/:id', async (req, res) => {
+// Update a classroom (admin only)
+router.put('/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { building, room_number, capacity } = req.body;
 
@@ -74,8 +75,8 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// Delete a classroom
-router.delete('/:id', async (req, res) => {
+// Delete a classroom (admin only)
+router.delete('/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
 
     try {

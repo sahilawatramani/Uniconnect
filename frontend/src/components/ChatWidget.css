@@ -1,4 +1,6 @@
-/* ChatWidget.css — Floating Chat Bubble & Mini Panel */
+/* =============================================
+   Chat Widget — Dark Theme
+   ============================================= */
 
 .chat-widget-bubble {
     position: fixed;
@@ -7,84 +9,68 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #004643, #007f5f);
+    background: var(--gradient-accent);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 1.3rem;
     cursor: pointer;
-    box-shadow: 0 6px 20px rgba(0, 70, 67, 0.4);
     z-index: 1000;
+    box-shadow: 0 4px 20px rgba(6, 182, 212, 0.4);
     transition: all 0.3s ease;
-    animation: pulse 2s infinite;
+    animation: float 3s ease-in-out infinite;
 }
 
 .chat-widget-bubble:hover {
     transform: scale(1.1);
-    box-shadow: 0 8px 24px rgba(0, 70, 67, 0.5);
+    box-shadow: 0 6px 28px rgba(6, 182, 212, 0.5);
 }
 
 .chat-widget-bubble.open {
     animation: none;
-    background: linear-gradient(135deg, #d32f2f, #e57373);
+    background: var(--bg-tertiary);
+    box-shadow: var(--shadow-md);
 }
 
-@keyframes pulse {
-    0% { box-shadow: 0 6px 20px rgba(0, 70, 67, 0.4); }
-    50% { box-shadow: 0 6px 24px rgba(0, 70, 67, 0.6), 0 0 0 8px rgba(0, 70, 67, 0.1); }
-    100% { box-shadow: 0 6px 20px rgba(0, 70, 67, 0.4); }
-}
-
-/* Chat Panel */
 .chat-widget-panel {
     position: fixed;
-    bottom: 90px;
+    bottom: 92px;
     right: 24px;
-    width: 340px;
+    width: 360px;
     height: 440px;
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-xl);
     display: flex;
     flex-direction: column;
+    z-index: 1000;
+    box-shadow: var(--shadow-lg);
+    animation: fadeInUp 0.3s ease-out;
     overflow: hidden;
-    animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .chat-widget-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, #004643, #006b5f);
-    color: #fff;
+    gap: 10px;
+    padding: 14px 16px;
+    background: rgba(6, 182, 212, 0.08);
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--accent-cyan);
     font-weight: 600;
     font-size: 0.9rem;
 }
 
-.chat-widget-header .expand-btn {
+.expand-btn {
     margin-left: auto;
-    color: rgba(255, 255, 255, 0.7) !important;
+    color: var(--text-muted) !important;
 }
 
-.chat-widget-header .expand-btn:hover {
-    color: #fff !important;
+.expand-btn:hover {
+    color: var(--accent-cyan) !important;
 }
 
-/* Messages */
 .chat-widget-messages {
     flex: 1;
     overflow-y: auto;
@@ -94,59 +80,46 @@
     gap: 8px;
 }
 
-.chat-widget-messages::-webkit-scrollbar {
-    width: 4px;
-}
-
-.chat-widget-messages::-webkit-scrollbar-thumb {
-    background: #d4e2e1;
-    border-radius: 2px;
-}
-
 .widget-msg {
     padding: 8px 12px;
-    border-radius: 12px;
-    font-size: 0.82rem;
-    line-height: 1.4;
+    border-radius: var(--radius-md);
+    font-size: 0.8rem;
+    line-height: 1.5;
     max-width: 85%;
-    animation: fadeIn 0.2s ease-out;
+    animation: fadeInUp 0.2s ease-out;
 }
 
 .widget-msg.user {
-    background: linear-gradient(135deg, #004643, #006b5f);
+    background: var(--gradient-violet);
     color: #fff;
     align-self: flex-end;
     border-bottom-right-radius: 4px;
 }
 
 .widget-msg.assistant {
-    background: #f5f5f5;
-    color: #333;
+    background: var(--bg-glass-hover);
+    color: var(--text-primary);
     align-self: flex-start;
     border-bottom-left-radius: 4px;
+    border: 1px solid var(--border-subtle);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* Input */
 .chat-widget-input {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     padding: 10px 12px;
-    border-top: 1px solid #f0f0f0;
-    background: #fafafa;
-}
-
-.chat-widget-input .ant-input {
-    border-radius: 8px;
-    font-size: 0.82rem;
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-glass);
 }
 
 .widget-send {
-    background: linear-gradient(135deg, #004643, #007f5f) !important;
-    border: none !important;
-    border-radius: 8px !important;
+    flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+    .chat-widget-panel {
+        width: calc(100vw - 48px);
+        right: 24px;
+        left: 24px;
+    }
 }

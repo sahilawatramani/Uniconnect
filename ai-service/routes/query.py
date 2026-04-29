@@ -1,10 +1,12 @@
 """
 Feature 1 — Conversational Database Assistant (NL-to-SQL)
 Converts natural language questions to SQL, executes them, and formats results.
+Supports RBAC: students can only query their own data.
 """
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from typing import Optional
 import psycopg2
 import re
 import json
@@ -16,6 +18,8 @@ router = APIRouter()
 
 class QueryRequest(BaseModel):
     question: str
+    role: Optional[str] = None      # 'admin' or 'student'
+    student_id: Optional[str] = None  # student's ID for filtering
 
 
 def get_db_connection():
@@ -64,6 +68,34 @@ def extract_sql(response_text: str) -> str:
     return response_text.strip()
 
 
+def get_student_filter_prompt(student_id: str) -> str:
+    """Generate RBAC constraint prompt for student role."""
+    return f"""
+CRITICAL ACCESS CONTROL RULE — YOU MUST FOLLOW THIS:
+The current user is a STUDENT with student_id = '{student_id}'.
+- For ANY query involving the 'students' table, you MUST add: WHERE s.student_id = '{student_id}' (or students.student_id = '{student_id}')
+- For ANY query involving the 'attendance' table, you MUST add: WHERE a.student_id = '{student_id}' (or attendance.student_id = '{student_id}')
+- For ANY query involving the 'enrollments' table, you MUST add: WHERE e.student_id = '{student_id}' (or enrollments.student_id = '{student_id}')
+- For ANY query involving the 'alumni' table, you MUST add: WHERE al.student_id = '{student_id}' (or alumni.student_id = '{student_id}')
+- Queries about 'courses', 'departments', 'classrooms', and 'instructors' are allowed WITHOUT student filtering.
+- If the user asks to see "all students" or "everyone's attendance", you MUST still filter to only their own data.
+- NEVER return data about other students. This is a security requirement.
+"""
+
+
+def validate_student_filter(sql: str, student_id: str) -> bool:
+    """Post-validate that SQL contains student_id filter for student-sensitive tables."""
+    sql_upper = sql.upper()
+    sensitive_tables = ['STUDENTS', 'ATTENDANCE', 'ENROLLMENTS', 'ALUMNI']
+    
+    for table in sensitive_tables:
+        if table in sql_upper:
+            # Check that the student_id filter is present
+            if student_id not in sql:
+                return False
+    return True
+
+
 @router.post("/query")
 async def query_database(request: QueryRequest):
     """Convert natural language to SQL, execute, and return formatted response."""
@@ -77,6 +109,11 @@ async def query_database(request: QueryRequest):
         columns = []
         total_rows = 0
         
+        # Build RBAC constraint
+        rbac_constraint = ""
+        if request.role == "student" and request.student_id:
+            rbac_constraint = get_student_filter_prompt(request.student_id)
+        
         for attempt in range(3):
             # Step 1: Generate SQL from natural language
             error_hint = f"\n\nYOUR PREVIOUS QUERY FAILED WITH THIS ERROR: {last_error}\nPLEASE FIX THE SQL QUERY SO IT EXECUTES SUCCESSFULLY." if last_error else ""
@@ -84,7 +121,7 @@ async def query_database(request: QueryRequest):
 
 DATABASE SCHEMA:
 {SCHEMA}
-
+{rbac_constraint}
 USER QUESTION: {request.question}{error_hint}
 
 IMPORTANT RULES:
@@ -107,6 +144,20 @@ SQL QUERY:"""
             # Step 2: Validate SQL (security check)
             if not validate_sql(sql_query + ';'):
                 raise HTTPException(status_code=400, detail="Only SELECT queries are allowed for security.")
+            
+            # Step 2b: Validate student filter for student role
+            if request.role == "student" and request.student_id:
+                if not validate_student_filter(sql_query, request.student_id):
+                    # Force-add student filter by regenerating
+                    last_error = f"SECURITY VIOLATION: Query must filter by student_id = '{request.student_id}' for all student-sensitive tables."
+                    if attempt == 2:
+                        cursor.close()
+                        conn.close()
+                        raise HTTPException(
+                            status_code=403, 
+                            detail="Access denied: You can only view your own data."
+                        )
+                    continue
             
             # Step 3: Execute SQL
             try:
