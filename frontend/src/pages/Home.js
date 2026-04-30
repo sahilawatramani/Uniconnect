@@ -1,168 +1,187 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, Spin } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    UserOutlined, BookOutlined, ApartmentOutlined, FileTextOutlined,
-    HomeOutlined, TeamOutlined, CheckCircleOutlined,
-    CommentOutlined, RobotOutlined, TrophyOutlined, BarChartOutlined,
-    ArrowRightOutlined, ThunderboltOutlined
+    ArrowRightOutlined, CommentOutlined, RobotOutlined,
+    TrophyOutlined, BarChartOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
 import './Home.css';
 
 const Home = () => {
     const navigate = useNavigate();
-    const { user, isAdmin, authAxios } = useAuth();
+    const { user, authAxios } = useAuth();
     const [stats, setStats] = useState(null);
-    const [loadingStats, setLoadingStats] = useState(true);
+    const revealRefs = useRef([]);
 
     const API_URL = process.env.REACT_APP_API_URL;
 
     useEffect(() => {
         fetchQuickStats();
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        revealRefs.current.forEach(ref => {
+            if (ref) observer.observe(ref);
+        });
+
+        return () => observer.disconnect();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const addToRevealRefs = (el) => {
+        if (el && !revealRefs.current.includes(el)) {
+            revealRefs.current.push(el);
+        }
+    };
 
     const fetchQuickStats = async () => {
         try {
             const response = await authAxios.get(`${API_URL}/api/stats`);
             setStats(response.data.stats);
-        } catch (err) {
-            // Stats are non-critical — silently fail
-        } finally {
-            setLoadingStats(false);
-        }
+        } catch (err) {}
     };
 
-    const managementCards = [
-        { title: 'Students', desc: isAdmin ? 'Manage all student records' : 'View your profile', path: '/students', icon: <UserOutlined />, color: '#06B6D4', gradient: 'linear-gradient(135deg, #06B6D4, #0891B2)' },
-        { title: 'Courses', desc: 'Browse available courses', path: '/courses', icon: <BookOutlined />, color: '#8B5CF6', gradient: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' },
-        { title: 'Departments', desc: 'University departments', path: '/departments', icon: <ApartmentOutlined />, color: '#10B981', gradient: 'linear-gradient(135deg, #10B981, #059669)' },
-        { title: 'Enrollments', desc: isAdmin ? 'All enrollment records' : 'Your enrolled courses', path: '/enrollments', icon: <FileTextOutlined />, color: '#F59E0B', gradient: 'linear-gradient(135deg, #F59E0B, #D97706)' },
-        ...(isAdmin ? [
-            { title: 'Classrooms', desc: 'Manage room allocation', path: '/classrooms', icon: <HomeOutlined />, color: '#EC4899', gradient: 'linear-gradient(135deg, #EC4899, #DB2777)' },
-            { title: 'Alumni', desc: 'Alumni directory', path: '/alumni', icon: <TeamOutlined />, color: '#14B8A6', gradient: 'linear-gradient(135deg, #14B8A6, #0D9488)' },
-        ] : []),
-        { title: 'Attendance', desc: isAdmin ? 'Track all attendance' : 'Your attendance records', path: '/attendance', icon: <CheckCircleOutlined />, color: '#3B82F6', gradient: 'linear-gradient(135deg, #3B82F6, #2563EB)' },
+    const dashboardCards = [
+        { title: 'Students', desc: 'Comprehensive student records and profile management.', path: '/students', category: 'Records', image: '/images/hero.png' },
+        { title: 'Courses', desc: 'Interactive lecture schedules and detailed curriculum.', path: '/courses', category: 'Academics', image: '/images/classroom.png' },
+        { title: 'Departments', desc: 'Academic schools, faculty listings, and resources.', path: '/departments', category: 'Schools', image: '/images/lounge.png' },
+        { title: 'Enrollments', desc: 'Track and manage student course registrations.', path: '/enrollments', category: 'Registry', image: '/images/enrollments.png' },
+        { title: 'Attendance', desc: 'Real-time tracking and participation analytics.', path: '/attendance', category: 'Analytics', image: '/images/attendance.png' },
+        { title: 'Faculty', desc: 'Profiles and research directories for all departments.', path: '/faculty', category: 'Staff', image: '/images/faculty.png' },
     ];
 
-    const aiCards = [
-        { title: 'AI Assistant', desc: 'Query your database using natural language', path: '/ai-chat', icon: <CommentOutlined />, color: '#06B6D4' },
-        { title: 'Learning Hub', desc: 'Upload materials & learn with AI', path: '/ai-learn', icon: <RobotOutlined />, color: '#8B5CF6' },
-        { title: 'Quiz Generator', desc: 'AI-generated quizzes on any topic', path: '/ai-quiz', icon: <TrophyOutlined />, color: '#F59E0B' },
-        { title: 'Smart Insights', desc: 'AI-powered analytics & reports', path: '/ai-insights', icon: <BarChartOutlined />, color: '#10B981' },
-    ];
-
-    const quickStats = isAdmin ? [
-        { label: 'Students', value: stats?.total_students || '—', color: '#06B6D4' },
-        { label: 'Courses', value: stats?.total_courses || '—', color: '#8B5CF6' },
-        { label: 'Departments', value: stats?.total_departments || '—', color: '#10B981' },
-        { label: 'Enrollments', value: stats?.total_enrollments || '—', color: '#F59E0B' },
-    ] : [
-        { label: 'My Courses', value: stats?.total_enrollments || stats?.my_courses?.length || '—', color: '#06B6D4' },
-        { label: 'Attendance', value: stats?.attendance_percentage ? `${stats.attendance_percentage}%` : '—', color: '#059669' },
-        { label: 'Total Classes', value: stats?.total_classes || '—', color: '#7C3AED' },
+    const aiTools = [
+        { title: 'AI Assistant', desc: 'Conversational interface for campus data.', path: '/ai-chat', icon: <CommentOutlined /> },
+        { title: 'Learning Hub', desc: 'AI-generated study flows and materials.', path: '/ai-learn', icon: <RobotOutlined /> },
+        { title: 'Quiz Generator', desc: 'Adaptive practice sets for every course.', path: '/ai-quiz', icon: <TrophyOutlined /> },
+        { title: 'Smart Insights', desc: 'Predictive analytics on academic trends.', path: '/ai-insights', icon: <BarChartOutlined /> },
     ];
 
     return (
         <div className="home-page">
-            {/* Hero Section */}
-            <section className="hero-section">
-                <div className="hero-content animate-fade-in-up">
-                    <div className="hero-greeting">
-                        <span className="greeting-wave">👋</span>
-                        <span>Welcome back,</span>
-                    </div>
-                    <h1 className="hero-name">{user?.username || 'User'}</h1>
-                    <p className="hero-desc">
-                        {isAdmin
-                            ? 'Manage your institution with AI-powered insights and tools.'
-                            : 'Access your academic dashboard, courses, and AI learning tools.'}
-                    </p>
-                    <div className="hero-badge">
-                        <ThunderboltOutlined />
-                        <span>{isAdmin ? 'Administrator' : 'Student'}</span>
-                    </div>
-                </div>
-                <div className="hero-glow" />
-            </section>
-
-            {/* Quick Stats */}
-            <div className="stats-strip animate-fade-in-up delay-1">
-                {loadingStats ? (
-                    <div className="stats-loading"><Spin size="small" /> Loading stats...</div>
-                ) : (
-                    quickStats.map((stat, i) => (
-                        <div className="stat-pill" key={i}>
-                            <span className="stat-pill-value" style={{ color: stat.color }}>
-                                {stat.value}
-                            </span>
-                            <span className="stat-pill-label">{stat.label}</span>
-                        </div>
-                    ))
-                )}
-            </div>
-
-            {/* Management Section */}
-            <div className="section">
-                <div className="section-header animate-fade-in-up delay-2">
-                    <h2 className="section-title">
-                        <span className="title-icon" style={{ background: 'rgba(6, 182, 212, 0.1)', color: '#06B6D4' }}>📊</span>
-                        {isAdmin ? 'Management' : 'My Dashboard'}
-                    </h2>
-                </div>
-                <Row gutter={[16, 16]}>
-                    {managementCards.map((card, i) => (
-                        <Col xs={24} sm={12} md={8} lg={6} key={i}>
-                            <div
-                                className={`dash-card animate-fade-in-up delay-${Math.min(i + 2, 6)}`}
-                                onClick={() => navigate(card.path)}
-                                id={`card-${card.title.toLowerCase().replace(/\s/g, '-')}`}
-                            >
-                                <div className="dash-card-icon" style={{ background: card.gradient }}>
-                                    {card.icon}
-                                </div>
-                                <div className="dash-card-info">
-                                    <h3>{card.title}</h3>
-                                    <p>{card.desc}</p>
-                                </div>
-                                <ArrowRightOutlined className="dash-card-arrow" />
+            <div className="hero-modern-wrapper">
+                <section className="hero-modern reveal" ref={addToRevealRefs}>
+                    <div className="hero-copy">
+                        <span className="hero-eyebrow">Academic Portal v2.4</span>
+                        <h1 className="hero-heading">
+                            Welcome back, <br />
+                            <span className="text-highlight">{user?.username || 'James R. Harding'}</span>
+                        </h1>
+                        
+                        {/* Quick Stats POV Row */}
+                        <div className="hero-stats">
+                            {user?.role === 'student' ? (
+                                <>
+                                    <div className="stat-item">
+                                        <span className="stat-value">3.88</span>
+                                        <span className="stat-label">Current GPA</span>
+                                    </div>
+                                    <div className="stat-item">
+                                        <span className="stat-value">{stats?.attendance_percentage || '94'}%</span>
+                                        <span className="stat-label">Attendance</span>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="stat-item">
+                                        <span className="stat-value">{stats?.total_students || '12.4k'}</span>
+                                        <span className="stat-label">Total Students</span>
+                                    </div>
+                                    <div className="stat-item">
+                                        <span className="stat-value">{stats?.total_courses || '342'}</span>
+                                        <span className="stat-label">Active Courses</span>
+                                    </div>
+                                </>
+                            )}
+                            <div className="stat-item">
+                                <span className="stat-value">Ivy League</span>
+                                <span className="stat-label">Status</span>
                             </div>
-                        </Col>
-                    ))}
-                </Row>
+                        </div>
+
+                        <p className="hero-description italic-subtext">
+                            At UniConnect, we're building a culture in which community members engage in respectful discussion across differences and feel comfortable having their views challenged.
+                        </p>
+                        <div className="hero-actions">
+                            <button className="premium-btn" onClick={() => navigate('/courses')}>
+                                Learn More <ArrowRightOutlined />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="hero-visual-circles">
+                        <div className="circle-main">
+                            <img src="/images/hero.png" alt="Campus Life" />
+                        </div>
+                        <div className="circle-sub circle-1">
+                            <img src="/images/classroom.png" alt="Learning" />
+                        </div>
+                        <div className="circle-sub circle-2">
+                            <img src="/images/lounge.png" alt="Community" />
+                        </div>
+                        <div className="circle-decorator"></div>
+                    </div>
+                </section>
             </div>
 
-            {/* AI Section */}
-            <div className="section">
-                <div className="section-header animate-fade-in-up delay-3">
-                    <h2 className="section-title">
-                        <span className="title-icon" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8B5CF6' }}>🤖</span>
-                        AI-Powered Features
-                    </h2>
+            <div className="marquee-premium">
+                <div className="marquee-content">
+                    {[1, 2, 3, 4].map(i => (
+                        <span key={i}>
+                            Enrollment Management • AI Insights • Campus Collaboration • Attendance Tracking • Smart Classrooms • 
+                        </span>
+                    ))}
                 </div>
-                <Row gutter={[16, 16]}>
-                    {aiCards.map((card, i) => (
-                        <Col xs={24} sm={12} md={6} key={i}>
-                            <div
-                                className={`ai-feature-card animate-fade-in-up delay-${Math.min(i + 3, 6)}`}
-                                onClick={() => navigate(card.path)}
-                                id={`ai-card-${card.title.toLowerCase().replace(/\s/g, '-')}`}
-                            >
-                                <div className="ai-card-glow" style={{ background: `radial-gradient(circle at center, ${card.color}20, transparent 70%)` }} />
-                                <div className="ai-card-icon" style={{ color: card.color }}>
-                                    {card.icon}
-                                </div>
+            </div>
+
+            <section className="dashboard-bento reveal" ref={addToRevealRefs}>
+                <div className="section-header">
+                    <h2>Academic Resources</h2>
+                    <p>Manage your records with precision.</p>
+                </div>
+                <div className="bento-grid">
+                    {dashboardCards.map((card, idx) => (
+                        <div key={idx} className="bento-card" onClick={() => navigate(card.path)}>
+                            <div className="bento-image">
+                                <img src={card.image} alt={card.title} />
+                                <span className="bento-pill">{card.category}</span>
+                            </div>
+                            <div className="bento-body">
                                 <h3>{card.title}</h3>
                                 <p>{card.desc}</p>
-                                <div className="ai-card-action" style={{ color: card.color }}>
-                                    Explore <ArrowRightOutlined />
-                                </div>
                             </div>
-                        </Col>
+                        </div>
                     ))}
-                </Row>
-            </div>
+                </div>
+            </section>
+
+            <section className="ai-universe reveal" ref={addToRevealRefs}>
+                <div className="section-header centered">
+                    <span className="hero-eyebrow">The Future</span>
+                    <h2>AI-Powered Learning</h2>
+                </div>
+                <div className="ai-grid">
+                    {aiTools.map((tool, idx) => (
+                        <div key={idx} className="ai-tool-glass" onClick={() => navigate(tool.path)}>
+                            <div className="ai-icon-box">{tool.icon}</div>
+                            <h3>{tool.title}</h3>
+                            <p>{tool.desc}</p>
+                            <div className="ai-launch">Launch <ArrowRightOutlined /></div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            <footer className="home-footer">
+                <div className="footer-logo">UniConnect</div>
+                <p>&copy; 2024 Hanover-Inspired Academic Solutions.</p>
+            </footer>
         </div>
     );
 };

@@ -91,8 +91,8 @@ const Register = () => {
             <div className="auth-media" style={{ backgroundImage: `url(${universityImg})` }}>
                 <div className="auth-media-overlay" />
                 <div className="auth-media-content">
-                    <h2>Join Symbiosis Institute</h2>
-                    <p>Create an account to connect with the campus, view your courses, and access AI-driven educational insights.</p>
+                    <h2>Your Future, <br />Architected Here.</h2>
+                    <p>Register with UniConnect to unlock a world-class academic experience. Track your growth, collaborate with faculty, and explore AI-enhanced learning resources.</p>
                 </div>
             </div>
 
@@ -101,7 +101,7 @@ const Register = () => {
                 <div className="auth-card">
                     <div className="auth-logo">
                         <div className="auth-logo-icon">
-                            <ThunderboltOutlined />
+                            U
                         </div>
                         <h1 className="auth-logo-text">UniConnect</h1>
                         <p className="auth-subtitle">Smart Campus Management</p>
@@ -109,7 +109,7 @@ const Register = () => {
 
                     <div className="auth-form">
                         <h2 className="auth-title">Create Account</h2>
-                        <p className="auth-desc">Register to get started</p>
+                        <p className="auth-desc">Join the elite academic community</p>
 
                         {/* Role Selector */}
                         <div className="role-selector">

@@ -14,4 +14,7 @@ node_modules/
 # Ignore logs
 *.log
 
-
+# Backups
+Uniconnect_Revamped/
+Uniconnect_Revamped.zip
+frontend_old/

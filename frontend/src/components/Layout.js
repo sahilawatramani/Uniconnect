@@ -1,18 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-    UserOutlined, BookOutlined, ApartmentOutlined, FileTextOutlined,
+    UserOutlined, BookOutlined, ApartmentOutlined, FileTextOutlined, 
     HomeOutlined, TeamOutlined, CheckCircleOutlined, CommentOutlined,
     RobotOutlined, TrophyOutlined, BarChartOutlined, LogoutOutlined,
-    MenuFoldOutlined, MenuUnfoldOutlined, DashboardOutlined,
-    ThunderboltOutlined
+    DashboardOutlined
 } from '@ant-design/icons';
 import { Tooltip } from 'antd';
 import './Layout.css';
 
 const Layout = ({ children }) => {
-    const [collapsed, setCollapsed] = useState(false);
+    const collapsed = false;
     const navigate = useNavigate();
     const location = useLocation();
     const { user, isAdmin, logout } = useAuth();
@@ -43,6 +42,13 @@ const Layout = ({ children }) => {
         navigate('/login');
     };
 
+    const userInitials = (user?.username || 'UC')
+        .split(' ')
+        .map((part) => part[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase();
+
     const NavItem = ({ item }) => {
         const isActive = location.pathname === item.path;
         const content = (
@@ -65,28 +71,21 @@ const Layout = ({ children }) => {
     return (
         <div className="app-layout">
             {/* Sidebar */}
-            <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
+            <aside className="sidebar">
                 <div className="sidebar-inner">
                     {/* Logo */}
                     <div className="sidebar-logo" onClick={() => navigate('/')}>
-                        <div className="logo-icon">
-                            <ThunderboltOutlined />
-                        </div>
+                        <div className="logo-mark">U</div>
                         {!collapsed && (
-                            <div className="logo-text">
-                                <span className="logo-name">UniConnect</span>
-                                <span className="logo-tagline">Smart Campus</span>
+                            <div className="logo-name-container">
+                                <span className="logo-name" style={{ fontWeight: 900, fontSize: '1.4rem', letterSpacing: '-0.02em' }}>UniConnect</span>
+                                <span className="logo-tagline" style={{ color: 'var(--accent-gold)' }}>Smart Campus</span>
                             </div>
                         )}
                     </div>
 
                     {/* Toggle */}
-                    <div
-                        className="sidebar-toggle"
-                        onClick={() => setCollapsed(!collapsed)}
-                    >
-                        {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                    </div>
+                    {/* Toggle removed to disable collapse functionality */}
 
                     {/* Nav Sections */}
                     <div className="nav-section">
@@ -110,14 +109,12 @@ const Layout = ({ children }) => {
 
                     {/* User Section */}
                     <div className="sidebar-user">
-                        <div className="user-avatar">
-                            {user?.username?.charAt(0).toUpperCase() || 'U'}
-                        </div>
+                        <div className="user-avatar">{userInitials}</div>
                         {!collapsed && (
                             <div className="user-details">
                                 <span className="user-name">{user?.username || 'User'}</span>
                                 <span className={`user-role ${user?.role || ''}`}>
-                                    {user?.role === 'admin' ? '⚡ Admin' : '🎓 Student'}
+                                    {user?.role === 'admin' ? 'Admin' : 'Student'}
                                 </span>
                             </div>
                         )}
@@ -131,7 +128,7 @@ const Layout = ({ children }) => {
             </aside>
 
             {/* Main Content */}
-            <main className={`main-content ${collapsed ? 'expanded' : ''}`}>
+            <main className="main-content">
                 {children}
             </main>
         </div>

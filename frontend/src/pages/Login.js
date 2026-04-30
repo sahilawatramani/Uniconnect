@@ -38,8 +38,8 @@ const Login = () => {
             <div className="auth-media" style={{ backgroundImage: `url(${universityImg})` }}>
                 <div className="auth-media-overlay" />
                 <div className="auth-media-content">
-                    <h2>Welcome to Symbiosis Institute</h2>
-                    <p>Access your personalized dashboard to manage your academic journey, track attendance, and explore insights.</p>
+                    <h2>Academic Excellence, <br />Digital Precision.</h2>
+                    <p>Welcome to UniConnect. Access your personalized Ivy League-inspired portal to manage records, track attendance, and leverage AI-powered insights.</p>
                 </div>
             </div>
 
@@ -48,7 +48,7 @@ const Login = () => {
                 <div className="auth-card">
                     <div className="auth-logo">
                         <div className="auth-logo-icon">
-                            <ThunderboltOutlined />
+                            U
                         </div>
                         <h1 className="auth-logo-text">UniConnect</h1>
                         <p className="auth-subtitle">Smart Campus Management</p>
@@ -56,7 +56,7 @@ const Login = () => {
 
                     <div className="auth-form">
                         <h2 className="auth-title">Welcome Back</h2>
-                        <p className="auth-desc">Sign in to access your dashboard</p>
+                        <p className="auth-desc">Secure access to your academic workspace</p>
 
                         <div className="auth-field">
                             <label>Email</label>
