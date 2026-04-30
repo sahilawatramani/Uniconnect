@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Input, Button, message } from 'antd';
-import { MailOutlined, LockOutlined, ThunderboltOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import { MailOutlined, LockOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import universityImg from '../University.jpg';
