@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { Spin } from 'antd';
+import { AuthProvider } from './context/AuthContext';
 
 // Auth Pages
 import Login from './pages/Login';
@@ -27,47 +26,25 @@ import AiInsights from './pages/AiInsights';
 import Layout from './components/Layout';
 import ChatWidget from './components/ChatWidget';
 
-// Protected Route Wrapper
-const ProtectedRoute = ({ children, adminOnly = false }) => {
-    const { user, loading, isAdmin } = useAuth();
+import { useAuth } from './context/AuthContext';
 
-    if (loading) {
-        return (
-            <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                height: '100vh', background: '#0F172A'
-            }}>
-                <Spin size="large" />
-            </div>
-        );
-    }
+const ProtectedRoute = ({ children }) => {
+    const { user, loading } = useAuth();
 
+    if (loading) return <div className="loading-screen">Verifying Session...</div>;
+    
     if (!user) {
         return <Navigate to="/login" replace />;
-    }
-
-    if (adminOnly && !isAdmin) {
-        return <Navigate to="/" replace />;
     }
 
     return <Layout>{children}</Layout>;
 };
 
-// Public Route (redirect to home if already logged in)
 const PublicRoute = ({ children }) => {
     const { user, loading } = useAuth();
 
-    if (loading) {
-        return (
-            <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                height: '100vh', background: '#0F172A'
-            }}>
-                <Spin size="large" />
-            </div>
-        );
-    }
-
+    if (loading) return null;
+    
     if (user) {
         return <Navigate to="/" replace />;
     }
