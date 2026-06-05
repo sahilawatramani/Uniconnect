@@ -17,6 +17,13 @@
 
 ---
 
+## 🌐 Live Demo
+
+**Deployed Application:**  
+https://uniconnect-swart.vercel.app/
+
+---
+
 ## 🌟 Overview
 
 UniConnect is an enterprise-grade academic administration dashboard and learning system. It streamlines student lifecycle operations, department scheduling, and enrollment tracking. It also features a **Python FastAPI AI microservice layer** powered by local LLMs (via Ollama) to offer natural language database querying, document retrieval (RAG), automated quiz generation, and analytical dashboards.
